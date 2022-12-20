@@ -1,0 +1,12 @@
+services:
+  hardhat:
+    container_name: hardhat
+    image: node:16
+    working_dir: /home/node/app
+    environment:
+      - REPORT_GAS=TRUE
+    volumes:
+      - ./:/home/node/app
+    ports:
+      - "8545:8545"
+    command: sh -c "npm install --verbose && npx hardhat node"

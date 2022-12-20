@@ -173,6 +173,62 @@ contract Voting is Ownable {
     }
 
     /*
+    * @notice Allows voter to vote for a proposal
+    * @param proposalId The id of the proposal the voter wants to vote for
+    */
+    function vote(uint proposalId) external onlyVoter {
+        require(_voteStatus == WorkflowStatus.VotingSessionStarted, "Vote cannot be submitted for the current voting");
+
+        require(proposals.length > proposalId, "Proposal not found");
+
+        uint256 currentVotingSession = _votingSession.current();
+
+        Voter storage voter = _voters[msg.sender];
+
+        voter.lastVotingSession = currentVotingSession;
+
+        voter.votedProposalId = proposalId;
+
+        voter.isRegistered = false;
+
+        proposals[proposalId].voteCount++;
+
+        // No previous equality
+        if (_tiedProposals.length == 0) {
+
+            // Winning proposal gets another vote
+            if (proposalId == _winningProposalId) {
+                emit Voted(msg.sender, proposalId);
+
+                return;
+            }
+
+            // New winning proposal
+            if (proposals[proposalId].voteCount > proposals[_winningProposalId].voteCount) {
+                _winningProposalId = proposalId;
+
+            // New equality
+            } else if (proposals[proposalId].voteCount == proposals[_winningProposalId].voteCount) {
+                _tiedProposals.push(_winningProposalId);
+                _tiedProposals.push(proposalId);
+            }
+        } else { // Previous equality
+
+            // New winning proposal, no more equality
+            if (proposals[proposalId].voteCount > proposals[_tiedProposals[0]].voteCount) {
+                _winningProposalId = proposalId;
+                delete _tiedProposals;
+
+            // New proposal has equal votes as tied ones
+            } else if (proposals[proposalId].voteCount == proposals[_tiedProposals[0]].voteCount) {
+                _tiedProposals.push(proposalId);
+            }
+        }
+
+        emit Voted(msg.sender, proposalId);
+    }
+
+    /*
     * @notice Allows everybody to know the voting status
     */
     function getStatus() external view returns(WorkflowStatus) {

@@ -3,12 +3,17 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 /*
 * @author alexisljn
 * @notice Simple voting smart contract for a small organization
 */
 contract Voting is Ownable {
+
+    using Counters for Counters.Counter;
+
+    Counters.Counter private _votingSession;
 
     mapping(address => Voter) private _voters;
 
@@ -70,6 +75,10 @@ contract Voting is Ownable {
     modifier onlyVoter {
         require(_voters[msg.sender].isRegistered, "Address is not registered as allowed voter");
         _;
+    }
+
+    constructor() {
+        _votingSession.increment();
     }
 
     /*

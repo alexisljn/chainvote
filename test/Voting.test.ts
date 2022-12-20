@@ -271,4 +271,98 @@ describe("Voting smart contract test", () => {
             ;
         });
     });
+
+    describe("Vote", () => {
+        async function deployAndVoteFixture() {
+            const Voting = await ethers.getContractFactory("Voting");
+
+            const [owner, ...otherAccounts] = await ethers.getSigners();
+
+            const voting: Voting = await Voting.deploy();
+
+            await voting.deployed();
+
+            await voting.registerVoter(owner.address);
+            await voting.registerVoter(otherAccounts[0].address);
+            await voting.registerVoter(otherAccounts[1].address);
+            await voting.registerVoter(otherAccounts[2].address);
+            await voting.registerVoter(otherAccounts[3].address);
+
+            await voting.startProposalsRegistration();
+
+            await voting.addProposal('Fixture');
+
+            await voting.addProposal('Fixture 2');
+
+            await voting.addProposal('Fixture 3');
+
+            await voting.endProposalsRegistration();
+
+            return {voting, owner, otherAccounts, proposalIds: [0,1,2]};
+        }
+
+        it("Should emit event when vote successfully registered", async () => {
+            const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndVoteFixture);
+
+            await voting.startVotingSession();
+
+            await expect(voting.vote(proposalIds[0]))
+                .to
+                .emit(voting, "Voted")
+                .withArgs(owner.address, proposalIds[0])
+            ;
+
+            const votingOtherAccount0 = voting.connect(otherAccounts[0]);
+
+            await expect(votingOtherAccount0.vote(proposalIds[1]))
+                .to
+                .emit(votingOtherAccount0, "Voted")
+                .withArgs(otherAccounts[0].address, proposalIds[1])
+            ;
+        });
+
+        it("Should update proposal vote count after vote", async () => {
+            const {voting, proposalIds} = await loadFixture(deployAndVoteFixture);
+
+            await voting.startVotingSession();
+
+            await voting.vote(proposalIds[0]);
+
+            const proposal = await voting.proposals(proposalIds[0]);
+
+            expect(proposal.voteCount).to.equal(1);
+        });
+
+        it("Should revert if submitting vote when not allowed", async () => {
+            const {voting, proposalIds} = await loadFixture(deployAndVoteFixture);
+
+            await expect(voting.vote(proposalIds[0]))
+                .to
+                .be
+                .revertedWith("Vote cannot be submitted for the current voting")
+            ;
+        });
+
+        it("Should revert if proposal is not found", async () => {
+            const {voting} = await loadFixture(deployAndVoteFixture);
+
+            await voting.startVotingSession();
+
+            await expect(voting.vote(42)).to.be.revertedWith("Proposal not found");
+        })
+
+        it("Should revert if voter has already voted", async () => {
+            const {voting, proposalIds} = await loadFixture(deployAndVoteFixture);
+
+            await voting.startVotingSession();
+
+            await voting.vote(proposalIds[0]);
+
+            await expect(voting.vote(proposalIds[0]))
+                .to
+                .be
+                .revertedWith("Address is not registered as allowed voter")
+            ;
+        });
+    });
 });

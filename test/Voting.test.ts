@@ -48,12 +48,12 @@ describe("Voting smart contract test", () => {
 
     describe("Workflow status change (except RegisteringVoters)", () => {
         it("Should emit event when owner start proposals registration", async () => {
-            const {voting} = await loadFixture(deployVotingFixture);
+            const {voting, owner} = await loadFixture(deployVotingFixture);
 
             await expect(voting.startProposalsRegistration())
                 .to
                 .emit(voting, "WorkflowStatusChange")
-                .withArgs(WorkflowStatus.RegisteringVoters, WorkflowStatus.ProposalsRegistrationStarted)
+                .withArgs(WorkflowStatus.RegisteringVoters, WorkflowStatus.ProposalsRegistrationStarted, owner.address)
             ;
         });
 
@@ -70,14 +70,14 @@ describe("Voting smart contract test", () => {
         });
 
         it("Should emit event when owner end proposals registration", async () => {
-            const {voting} = await loadFixture(deployVotingFixture);
+            const {voting, owner} = await loadFixture(deployVotingFixture);
 
             await voting.startProposalsRegistration();
 
             await expect(voting.endProposalsRegistration())
                 .to
                 .emit(voting, "WorkflowStatusChange")
-                .withArgs(WorkflowStatus.ProposalsRegistrationStarted, WorkflowStatus.ProposalsRegistrationEnded)
+                .withArgs(WorkflowStatus.ProposalsRegistrationStarted, WorkflowStatus.ProposalsRegistrationEnded, owner.address)
             ;
         });
 
@@ -96,7 +96,7 @@ describe("Voting smart contract test", () => {
         });
 
         it("Should emit event when owner start voting session", async () => {
-            const {voting} = await loadFixture(deployVotingFixture);
+            const {voting, owner} = await loadFixture(deployVotingFixture);
 
             await voting.startProposalsRegistration();
 
@@ -105,7 +105,7 @@ describe("Voting smart contract test", () => {
             await expect(voting.startVotingSession())
                 .to
                 .emit(voting, "WorkflowStatusChange")
-                .withArgs(WorkflowStatus.ProposalsRegistrationEnded, WorkflowStatus.VotingSessionStarted)
+                .withArgs(WorkflowStatus.ProposalsRegistrationEnded, WorkflowStatus.VotingSessionStarted, owner.address)
             ;
         });
 
@@ -126,7 +126,7 @@ describe("Voting smart contract test", () => {
         });
 
         it("Should emit event when owner end voting session", async () => {
-            const {voting} = await loadFixture(deployVotingFixture);
+            const {voting, owner} = await loadFixture(deployVotingFixture);
 
             await voting.startProposalsRegistration();
 
@@ -137,7 +137,7 @@ describe("Voting smart contract test", () => {
             await expect(voting.endVotingSession())
                 .to
                 .emit(voting, "WorkflowStatusChange")
-                .withArgs(WorkflowStatus.VotingSessionStarted, WorkflowStatus.VotingSessionEnded)
+                .withArgs(WorkflowStatus.VotingSessionStarted, WorkflowStatus.VotingSessionEnded, owner.address)
             ;
         });
 
@@ -162,12 +162,12 @@ describe("Voting smart contract test", () => {
 
     describe("Registering Voters", () => {
         it("Should emit event when voter successfully registered", async () => {
-            const {voting, otherAccounts} = await loadFixture(deployVotingFixture);
+            const {voting, owner, otherAccounts} = await loadFixture(deployVotingFixture);
 
             await expect(voting.registerVoter(otherAccounts[0].address))
                 .to
                 .emit(voting, "VoterRegistered")
-                .withArgs(otherAccounts[0].address)
+                .withArgs(otherAccounts[0].address, owner.address)
             ;
         });
 
@@ -241,7 +241,7 @@ describe("Voting smart contract test", () => {
             await expect(voting.addProposal('Fixture'))
                 .to
                 .emit(voting, "ProposalRegistered")
-                .withArgs(0)
+                .withArgs(0, owner.address)
             ;
         });
 

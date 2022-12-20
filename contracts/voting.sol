@@ -99,227 +99,69 @@ contract Voting is Ownable {
         emit VoterRegistered(_address);
     }
 
-    /*
-    * @notice Allows administrato change voting status. CountingEquality and VotesTallied can't be automatically triggered by administrator
-    * @param _status The status to set
+    /**
+    * @notice Allow administrator to start the registration of voters
     */
-    function setWorkflowStatus(WorkflowStatus _status) external onlyOwner {
-        require(_status != WorkflowStatus.CountingEquality, "Counting equality can only be trigger by the contract itself");
-
-        require(_status != WorkflowStatus.VotesTallied, "Votes tallied can only be trigger by the contract itself");
+    function registeringVoters() external onlyOwner {
+        require(_voteStatus == WorkflowStatus.VotesTallied, "Current voting is not finished");
 
         WorkflowStatus previousStatus = _voteStatus;
 
-        _voteStatus = _status;
+        _voteStatus = WorkflowStatus.RegisteringVoters;
 
-        emit WorkflowStatusChange(previousStatus, _status);
+        emit WorkflowStatusChange(previousStatus, _voteStatus);
     }
 
-    /*
-    * @notice Allows voters to submit proposals for voting session
-    * @param description the description of the submitted proposal
+    /**
+    * @notice Allow administrator to start the registration of proposals for voters
     */
-    function addProposal(string calldata description) external onlyVoter {
-        require(_voteStatus == WorkflowStatus.ProposalsRegistrationStarted, "Proposal cannot be submitted for the current voting");
+    function startProposalsRegistration() external onlyOwner {
+        require(_voteStatus == WorkflowStatus.RegisteringVoters, "Current voting is not registering voters");
 
-        require(keccak256(abi.encodePacked(description)) != keccak256(abi.encodePacked("")), "Proposal description cannot be empty");
+        WorkflowStatus previousStatus = _voteStatus;
 
-        uint proposalId = uint(keccak256(abi.encodePacked(description, block.timestamp, msg.sender)));
+        _voteStatus = WorkflowStatus.ProposalsRegistrationStarted;
 
-        proposals[proposalId] = Proposal(description, 0);
-
-        proposalsId.push(proposalId);
-
-        emit ProposalRegistered(proposalId);
+        emit WorkflowStatusChange(previousStatus, _voteStatus);
     }
 
-    /*
-    * @notice Allows voter to vote for a proposal
-    * @param proposalId The id of the proposal the voter wants to vote for
+    /**
+    * @notice Allow administrator to end the registration of proposals for voters
     */
-    function vote(uint proposalId) external onlyVoter {
-        require(_voteStatus == WorkflowStatus.VotingSessionStarted, "Vote cannot be submitted for the current voting");
+    function endProposalsRegistration() external onlyOwner {
+        require(_voteStatus == WorkflowStatus.ProposalsRegistrationStarted, "Current voting is not registering proposals");
 
-        require(keccak256(abi.encodePacked(proposals[proposalId].description)) != keccak256(abi.encodePacked("")), "Proposal not found");
+        WorkflowStatus previousStatus = _voteStatus;
 
-        require(_voters[msg.sender].votedProposalId == 0, "You already vote for a proposal");
+        _voteStatus = WorkflowStatus.ProposalsRegistrationEnded;
 
-        Voter storage voter = _voters[msg.sender];
-        voter.hasVoted = true;
-        voter.votedProposalId = proposalId;
-
-        proposals[proposalId].voteCount++;
-
-        emit Voted(msg.sender, proposalId);
+        emit WorkflowStatusChange(previousStatus, _voteStatus);
     }
 
-    /*
-    * @notice Allows administrator to count votes and close voting
-    * @dev Function has a system to handle an equality between proposals.
+    /**
+    * @notice Allow administrator to start the voting period of voters
     */
-    function pickWinner() external onlyOwner {
-        require(_voteStatus ==  WorkflowStatus.VotingSessionEnded, "Votes cannot be counted at this moment for the current voting");
+    function startVotingSession() external onlyOwner {
+        require(_voteStatus == WorkflowStatus.ProposalsRegistrationEnded, "Current voting is still registering proposals");
 
-        require(proposalsId.length > 0, "There is no proposal for this voting");
-
-        uint tempWinningProposalId;
-
-        for (uint i = 0; i < proposalsId.length; i++) {
-            Proposal memory currentProposal = proposals[proposalsId[i]];
-            Proposal memory winningProposal = proposals[tempWinningProposalId];
-
-            if (currentProposal.voteCount > winningProposal.voteCount) {
-                tempWinningProposalId = proposalsId[i];
-
-                if (_tiedProposals.length > 0) {
-                    delete _tiedProposals;
-                }
-
-            } else if (currentProposal.voteCount == winningProposal.voteCount && winningProposal.voteCount > 0) { // Equality
-                // Reset array if new tie has more votes than previous one
-                if (_tiedProposals.length > 0 && winningProposal.voteCount > proposals[_tiedProposals[_tiedProposals.length-1]].voteCount) {
-                    delete _tiedProposals;
-                }
-
-                // Push "secondary" proposal of the tie
-                _tiedProposals.push(proposalsId[i]);
-
-                // Check if current winningProposal ("main" proposal of the tie) is already in the array (in case of more than two tied proposals)
-                if (_tiedProposals.length == 1 || _tiedProposals[1] != tempWinningProposalId) {
-                    _tiedProposals.push(tempWinningProposalId);
-                }
-            }
-        }
-
-        require(proposals[tempWinningProposalId].voteCount > 0, "No proposal has a single vote for the current voting");
-
-        if (_tiedProposals.length > 0 ) {
-            _voteStatus = WorkflowStatus.CountingEquality;
-            emit Equality(_tiedProposals);
-        } else {
-            _winningProposalId = tempWinningProposalId;
-            _voteStatus = WorkflowStatus.VotesTallied;
-            emit WinningProposal(_winningProposalId);
-        }
-    }
-
-    /*
-    * @notice Allows administator to prepare a new ballot vor a voting that has an equality in proposals vote.
-    */
-    function prepareNewBallot() external onlyOwner {
-        require(_voteStatus == WorkflowStatus.CountingEquality, "New ballot can only be prepared for an equality");
-
-        // Reset voters attribute
-        for (uint i = 0; i < votersId.length; i++) {
-            Voter storage voter = _voters[votersId[i]];
-            voter.hasVoted = false;
-            voter.votedProposalId = 0;
-        }
-
-        // Reset proposals
-        _keepTiedProposals();
+        WorkflowStatus previousStatus = _voteStatus;
 
         _voteStatus = WorkflowStatus.VotingSessionStarted;
 
-        emit NewBallotPrepared();
+        emit WorkflowStatusChange(previousStatus, _voteStatus);
     }
 
-    /*
-    * @notice Allows administrator to reset all properties of contract in order to have clean state for next votings
+    /**
+    * @notice Allow administrator to end the voting period of voters
     */
-    function resetVoting() external onlyOwner {
-        require(_voteStatus == WorkflowStatus.VotesTallied, "Resetting voting is allowed only when votes have been counted");
+    function endVotingSession() external onlyOwner {
+        require(_voteStatus == WorkflowStatus.VotingSessionStarted, "Current voting session hasn't started");
 
-        winningProposalHistory.push(proposals[_winningProposalId]);
+        WorkflowStatus previousStatus = _voteStatus;
 
-        delete _winningProposalId;
+        _voteStatus = WorkflowStatus.VotingSessionEnded;
 
-        for(uint i = 0; i < proposalsId.length; i++) {
-            delete proposals[proposalsId[i]];
-        }
-
-        delete proposalsId;
-
-        for(uint i = 0; i < votersId.length; i++) {
-            delete _voters[votersId[i]];
-        }
-
-        delete votersId;
-
-        emit VotingReset();
-    }
-
-    function _keepTiedProposals() private {
-        Proposal[] memory proposalsToKeep = new Proposal[](_tiedProposals.length);
-
-        // Keep tied proposals in memory array
-        for (uint i = 0; i < _tiedProposals.length; i++) {
-            proposalsToKeep[i] = proposals[_tiedProposals[i]];
-        }
-
-        // Delete all proposals from mapping
-        for (uint i = 0; i < proposalsId.length; i++) {
-            delete proposals[proposalsId[i]];
-        }
-
-        // Affect proposalsId storage array to _tiedProposals
-        proposalsId = _tiedProposals;
-
-        delete _tiedProposals;
-
-        // Reset proposal properties and store them into mapping
-        for (uint i = 0; i < proposalsId.length; i++) {
-            Proposal memory proposalToKeep = proposalsToKeep[i];
-
-            proposalToKeep.voteCount = 0;
-
-            proposals[proposalsId[i]] = proposalToKeep;
-        }
-    }
-
-    /*
-    * @notice Allows administrator to pick randomly a proposal among those which has same vote count.
-    * @notice Should be used when no proposal won in multiple ballots.
-    */
-    function pickWinnerRandomly() external onlyOwner {
-        require(_voteStatus == WorkflowStatus.CountingEquality, "Winning proposal can only be randomly picked if there is an equality");
-
-        assert(_tiedProposals.length > 0);
-
-        _keepTiedProposals();
-
-        uint randomIndex = uint(keccak256(abi.encodePacked(block.timestamp, block.number, block.basefee))) % _tiedProposals.length;
-
-        _winningProposalId = proposalsId[randomIndex];
-
-        _voteStatus = WorkflowStatus.VotesTallied;
-
-        emit WinningProposal(_winningProposalId);
-    }
-
-    /*
-    * @notice Allows everybody to consult the winning proposal at the end of a voting
-    */
-    function getWinner() external view returns(Proposal memory) {
-        require(_voteStatus == WorkflowStatus.VotesTallied, "Voting is not over or has not began");
-
-        return proposals[_winningProposalId];
-    }
-
-    /*
-    * @notice Allows administrator and voters to see for which proposal a certain voter has voted for
-    * @param _address The address of the voter
-    */
-    function getVoterVote(address _address) external view returns(Proposal memory) {
-        require(msg.sender == owner() || _voters[msg.sender].isRegistered, "You should be owner or voter to see voter's vote");
-
-        require(_address != address(0), "0 address is invalid");
-
-        Voter memory voter = _voters[_address];
-
-        require(voter.isRegistered, "Voter not found");
-
-        return proposals[voter.votedProposalId];
+        emit WorkflowStatusChange(previousStatus, _voteStatus);
     }
 
     /*

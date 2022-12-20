@@ -230,4 +230,45 @@ describe("Voting smart contract test", () => {
         });
     });
 
+    describe("Registering Proposals", () => {
+        it("Should emit event when proposal is successfully registered", async () => {
+            const {voting, owner} = await loadFixture(deployVotingFixture);
+
+            await voting.registerVoter(owner.address);
+
+            await voting.startProposalsRegistration();
+
+            await expect(voting.addProposal('Fixture'))
+                .to
+                .emit(voting, "ProposalRegistered")
+                .withArgs(0)
+            ;
+        });
+
+        it("Should revert at proposal's submission when not allowed", async () => {
+            const {voting, owner} = await loadFixture(deployVotingFixture);
+
+            await voting.registerVoter(owner.address);
+
+            await expect(voting.addProposal('Fixture'))
+                .to
+                .be
+                .revertedWith("Proposal cannot be submitted for the current voting")
+            ;
+        });
+
+        it("Should revert when proposal is empty", async () => {
+            const {voting, owner} = await loadFixture(deployVotingFixture);
+
+            await voting.registerVoter(owner.address);
+
+            await voting.startProposalsRegistration();
+
+            await expect(voting.addProposal(''))
+                .to
+                .be
+                .revertedWith("Proposal description cannot be empty")
+            ;
+        });
+    });
 });

@@ -17,9 +17,6 @@ contract Voting is Ownable {
 
     mapping(address => Voter) private _voters;
 
-    /* @dev Helper variable to handle easily CRUD in _voters mapping */
-    address[] public votersId;
-
     Proposal[] public proposals;
 
     uint private _winningProposalId;
@@ -90,8 +87,6 @@ contract Voting is Ownable {
         require(!_voters[_address].isRegistered, "Voter is already registered");
 
         _voters[_address].isRegistered = true;
-
-        votersId.push(_address);
 
         emit VoterRegistered(_address, msg.sender);
     }

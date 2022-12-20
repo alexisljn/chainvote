@@ -206,4 +206,28 @@ describe("Voting smart contract test", () => {
         });
     });
 
+    describe('onlyVoter test', () => {
+        it("Should not revert if voter calls onlyOwner function", async () => {
+            const {voting, owner} = await loadFixture(deployVotingFixture);
+
+            await voting.registerVoter(owner.address);
+
+            await voting.startProposalsRegistration();
+
+            await expect(voting.addProposal('Fixture')).to.be.not.reverted;
+        });
+
+        it("Should revert if not voter calls onlyVoter function", async () => {
+            const {voting} = await loadFixture(deployVotingFixture);
+
+            await voting.startProposalsRegistration();
+
+            await expect(voting.addProposal('Fixture'))
+                .to
+                .be
+                .revertedWith("Address is not registered as allowed voter")
+            ;
+        });
+    });
+
 });

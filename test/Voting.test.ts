@@ -160,4 +160,50 @@ describe("Voting smart contract test", () => {
         });
     });
 
+    describe("Registering Voters", () => {
+        it("Should emit event when voter successfully registered", async () => {
+            const {voting, otherAccounts} = await loadFixture(deployVotingFixture);
+
+            await expect(voting.registerVoter(otherAccounts[0].address))
+                .to
+                .emit(voting, "VoterRegistered")
+                .withArgs(otherAccounts[0].address)
+            ;
+        });
+
+        it("Should revert when registering a voter when not allowed", async () => {
+            const {voting, otherAccounts} = await loadFixture(deployVotingFixture);
+
+            await voting.startProposalsRegistration();
+
+            await expect(voting.registerVoter(otherAccounts[0].address))
+                .to
+                .be
+                .revertedWith("Registering new voters is not allowed for the current voting")
+            ;
+        });
+
+        it("Should revert when registering the 0 address as voter", async () => {
+            const {voting} = await loadFixture(deployVotingFixture);
+
+            await expect(voting.registerVoter(ethers.constants.AddressZero))
+                .to
+                .be
+                .revertedWith("0 address is invalid")
+            ;
+        });
+
+        it("Should revert when registering already-registered voter", async () => {
+            const {voting, otherAccounts} = await loadFixture(deployVotingFixture);
+
+            await voting.registerVoter(otherAccounts[0].address)
+
+            await expect(voting.registerVoter(otherAccounts[0].address))
+                .to
+                .be
+                .revertedWith("Voter is already registered")
+            ;
+        });
+    });
+
 });

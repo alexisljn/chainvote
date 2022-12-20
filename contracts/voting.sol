@@ -77,7 +77,7 @@ contract Voting is Ownable {
         _;
     }
 
-    constructor() {
+    constructor() Ownable() {
         _votingSession.increment();
     }
 

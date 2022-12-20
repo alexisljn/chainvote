@@ -37,7 +37,7 @@ contract Voting is Ownable {
 
     struct Voter {
         bool isRegistered;
-        bool hasVoted;
+        uint256 lastVotingSession;
         uint votedProposalId;
     }
 
@@ -90,9 +90,9 @@ contract Voting is Ownable {
 
         require(_address != address(0), "0 address is invalid");
 
-        require(!_voters[_address].isRegistered, "Voter is already registred");
+        require(!_voters[_address].isRegistered, "Voter is already registered");
 
-        _voters[_address] = Voter(true, false, 0);
+        _voters[_address].isRegistered = true;
 
         votersId.push(_address);
 

@@ -53,21 +53,21 @@ contract Voting is Ownable {
         VotesTallied
     }
 
-    event VoterRegistered(address voterAddress);
+    event VoterRegistered(address voterAddress, address caller);
 
-    event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
+    event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus, address caller);
 
-    event ProposalRegistered(uint proposalId);
+    event ProposalRegistered(uint proposalId, address caller);
 
     event Voted(address voter, uint proposalId);
 
-    event NewBallotPrepared();
+    event NewBallotPrepared(address caller);
 
-    event VotingReset();
+    event VotingReset(address caller);
 
-    event WinningProposal(uint proposalId);
+    event WinningProposal(uint proposalId, address caller);
 
-    event Equality(uint[] proposalsId);
+    event Equality(uint[] proposalsId, address caller);
 
     modifier onlyVoter {
         require(_voters[msg.sender].isRegistered, "Address is not registered as allowed voter");
@@ -93,7 +93,7 @@ contract Voting is Ownable {
 
         votersId.push(_address);
 
-        emit VoterRegistered(_address);
+        emit VoterRegistered(_address, msg.sender);
     }
 
     /**
@@ -106,7 +106,7 @@ contract Voting is Ownable {
 
         _voteStatus = WorkflowStatus.RegisteringVoters;
 
-        emit WorkflowStatusChange(previousStatus, _voteStatus);
+        emit WorkflowStatusChange(previousStatus, _voteStatus, msg.sender);
     }
 
     /**
@@ -119,7 +119,7 @@ contract Voting is Ownable {
 
         _voteStatus = WorkflowStatus.ProposalsRegistrationStarted;
 
-        emit WorkflowStatusChange(previousStatus, _voteStatus);
+        emit WorkflowStatusChange(previousStatus, _voteStatus, msg.sender);
     }
 
     /**
@@ -132,7 +132,7 @@ contract Voting is Ownable {
 
         _voteStatus = WorkflowStatus.ProposalsRegistrationEnded;
 
-        emit WorkflowStatusChange(previousStatus, _voteStatus);
+        emit WorkflowStatusChange(previousStatus, _voteStatus, msg.sender);
     }
 
     /**
@@ -145,7 +145,7 @@ contract Voting is Ownable {
 
         _voteStatus = WorkflowStatus.VotingSessionStarted;
 
-        emit WorkflowStatusChange(previousStatus, _voteStatus);
+        emit WorkflowStatusChange(previousStatus, _voteStatus, msg.sender);
     }
 
     /**
@@ -158,7 +158,7 @@ contract Voting is Ownable {
 
         _voteStatus = WorkflowStatus.VotingSessionEnded;
 
-        emit WorkflowStatusChange(previousStatus, _voteStatus);
+        emit WorkflowStatusChange(previousStatus, _voteStatus, msg.sender);
     }
 
     /*
@@ -174,7 +174,7 @@ contract Voting is Ownable {
 
         proposals.push(newProposal);
 
-        emit ProposalRegistered(proposals.length - 1);
+        emit ProposalRegistered(proposals.length - 1, msg.sender);
     }
 
     /*

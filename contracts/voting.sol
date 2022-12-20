@@ -20,10 +20,7 @@ contract Voting is Ownable {
     /* @dev Helper variable to handle easily CRUD in _voters mapping */
     address[] public votersId;
 
-    mapping(uint => Proposal) public proposals;
-
-    /* @dev Helper variable to handle easily CRUD in proposals mapping */
-    uint[] public proposalsId;
+    Proposal[] public proposals;
 
     uint private _winningProposalId;
 
@@ -165,19 +162,19 @@ contract Voting is Ownable {
     }
 
     /*
-    * @notice Allows everybody to get full list of proposalsId in one call.
-    * @dev Helper function
+    * @notice Allows voters to submit proposals for voting session
+    * @param description the description of the submitted proposal
     */
-    function getProposalsId() external view returns(uint[] memory) {
-        return proposalsId;
-    }
+    function addProposal(string calldata description) external onlyVoter {
+        require(_voteStatus == WorkflowStatus.ProposalsRegistrationStarted, "Proposal cannot be submitted for the current voting");
 
-    /*
-    * @notice Allows everybody to get full list of votersId in one call.
-    * @dev Helper function
-    */
-    function getVotersId() external view returns(address[] memory) {
-        return votersId;
+        require(keccak256(abi.encodePacked(description)) != keccak256(abi.encodePacked("")), "Proposal description cannot be empty");
+
+        Proposal memory newProposal = Proposal(description, 0);
+
+        proposals.push(newProposal);
+
+        emit ProposalRegistered(proposals.length - 1);
     }
 
     /*

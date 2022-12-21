@@ -282,6 +282,22 @@ contract Voting is Ownable {
         emit NewBallotPrepared(msg.sender);
     }
 
+    /**
+    * @notice allow voters that have already voted at previous ballot to register again. It has to be done before
+    * administrator prepares the additional ballot
+    */
+    function enableVoteForNewBallot() external {
+        require(_voteStatus == WorkflowStatus.CountingEquality, "No need to register again as voter now");
+
+        require(_voters[msg.sender].lastVotingSession == _votingSession.current(), "You wasn't registered as voter for current voting");
+
+        require(!_voters[msg.sender].isRegistered, "Already registered");
+
+        _voters[msg.sender].isRegistered = true;
+
+        emit VoterRegistered(msg.sender, msg.sender);
+    }
+
 
     /*
     * @notice Allows everybody to know the voting status

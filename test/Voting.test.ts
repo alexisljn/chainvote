@@ -270,6 +270,24 @@ describe("Voting smart contract test", () => {
                 .revertedWith("Proposal description cannot be empty")
             ;
         });
+
+        it("Should revert when too much proposals are submitted", async () => {
+            const {voting, owner} = await loadFixture(deployVotingFixture);
+
+            await voting.registerVoter(owner.address);
+
+            await voting.startProposalsRegistration();
+
+            for (let i = 0; i <= 19; i++) {
+                await voting.addProposal(`Fixture ${i + 1}`);
+            }
+
+            await expect(voting.addProposal('Fixture 21'))
+                .to
+                .be
+                .revertedWith("Too much proposals for current voting")
+            ;
+        });
     });
 
     describe("Vote", () => {

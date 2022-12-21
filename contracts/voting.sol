@@ -19,6 +19,9 @@ contract Voting is Ownable {
 
     Proposal[] public proposals;
 
+    // Max proposals per voting ?
+    uint8 private constant _maxProposalsPerVoting = 20;
+
     uint private _winningProposalId;
 
     /* @dev Store the proposals that have equal vote count */
@@ -164,6 +167,8 @@ contract Voting is Ownable {
         require(_voteStatus == WorkflowStatus.ProposalsRegistrationStarted, "Proposal cannot be submitted for the current voting");
 
         require(keccak256(abi.encodePacked(description)) != keccak256(abi.encodePacked("")), "Proposal description cannot be empty");
+
+        require(proposals.length + 1 <= _maxProposalsPerVoting, "Too much proposals for current voting");
 
         Proposal memory newProposal = Proposal(description, 0);
 

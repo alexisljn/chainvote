@@ -264,6 +264,26 @@ contract Voting is Ownable {
     }
 
     /*
+    * @notice Allows administrator to prepare a new ballot vor a voting that has an equality in proposals vote.
+    */
+    function prepareNewBallot() external onlyOwner {
+        require(_voteStatus == WorkflowStatus.CountingEquality, "New ballot can only be prepared for an equality");
+
+        for (uint8 i = 0 ; i < _tiedProposals.length; i++) {
+            _tiedProposals[i].voteCount = 0;
+        }
+
+        proposals = _tiedProposals;
+
+        delete _tiedProposals;
+
+        _voteStatus = WorkflowStatus.VotingSessionStarted;
+
+        emit NewBallotPrepared(msg.sender);
+    }
+
+
+    /*
     * @notice Allows everybody to know the voting status
     */
     function getStatus() external view returns(WorkflowStatus) {

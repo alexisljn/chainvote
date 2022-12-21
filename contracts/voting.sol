@@ -229,6 +229,32 @@ contract Voting is Ownable {
     }
 
     /*
+    * @notice Allows administrator to count votes and close voting
+    * @dev Function has a system to handle an equality between proposals.
+    */
+    function pickWinner() external onlyOwner {
+        require(_voteStatus ==  WorkflowStatus.VotingSessionEnded, "Voting session is not finished");
+
+        require(proposals.length > 0, "There is no proposal for this voting");
+
+        require(proposals[_winningProposalId].voteCount > 0, "No proposal has a single vote for the current voting");
+
+        if (_tiedProposals.length > 0 ) {
+            _voteStatus = WorkflowStatus.CountingEquality;
+
+            emit Equality(_tiedProposals, msg.sender);
+        } else {
+            _voteStatus = WorkflowStatus.VotesTallied;
+
+            winningProposalHistory.push(proposals[_winningProposalId]);
+
+            _votingSession.increment();
+
+            emit WinningProposal(_winningProposalId, msg.sender);
+        }
+    }
+
+    /*
     * @notice Allows everybody to know the voting status
     */
     function getStatus() external view returns(WorkflowStatus) {

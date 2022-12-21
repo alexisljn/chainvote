@@ -298,7 +298,7 @@ describe("Voting smart contract test", () => {
 
             await voting.endProposalsRegistration();
 
-            return {voting, owner, otherAccounts, proposalIds: [0,1,2]};
+            return {voting, owner, otherAccounts, proposalIds: [0, 1, 2]};
         }
 
         it("Should emit event when vote successfully registered", async () => {
@@ -364,5 +364,142 @@ describe("Voting smart contract test", () => {
                 .revertedWith("Address is not registered as allowed voter")
             ;
         });
+
+        describe("Counting votes", () => {
+            it("Should emit event in standard scenario for votes counting", async () => {
+                const {voting, owner, proposalIds} = await loadFixture(deployAndVoteFixture);
+
+                await voting.startVotingSession();
+
+                await voting.vote(proposalIds[1]);
+
+                await voting.endVotingSession();
+
+                await expect(voting.pickWinner())
+                    .to
+                    .emit(voting, "WinningProposal")
+                    .withArgs(proposalIds[1], owner.address)
+                ;
+            });
+
+            it("Should emit event when votes are counted and proposal win after previous equality", async () => {
+                const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndVoteFixture);
+
+                await voting.startVotingSession();
+
+                await voting.vote(proposalIds[0]);
+
+                const votingOtherAccount0 = voting.connect(otherAccounts[0]);
+
+                await votingOtherAccount0.vote(proposalIds[1]);
+
+                const votingOtherAccount1 = voting.connect(otherAccounts[1]);
+
+                await votingOtherAccount1.vote(proposalIds[1]);
+
+                await voting.endVotingSession();
+
+                await expect(voting.pickWinner())
+                    .to
+                    .emit(voting, "WinningProposal")
+                    .withArgs(proposalIds[1], owner.address)
+                ;
+            });
+
+            it("Should emit event when equality at votes counting", async () => {
+                const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndVoteFixture);
+
+                await voting.startVotingSession();
+
+                await voting.vote(proposalIds[0]);
+
+                const votingOtherAccount0 = voting.connect(otherAccounts[0]);
+
+                await votingOtherAccount0.vote(proposalIds[1]);
+
+                await voting.endVotingSession();
+
+                await expect(voting.pickWinner())
+                    .to
+                    .emit(voting, "Equality")
+                    .withArgs([proposalIds[0], proposalIds[1]], owner.address)
+                ;
+            });
+
+            it("Should emit equality event even if tie contains more of two proposals", async () => {
+                const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndVoteFixture);
+
+                await voting.startVotingSession();
+
+                await voting.vote(proposalIds[0]);
+
+                const votingOtherAccount0 = voting.connect(otherAccounts[0]);
+
+                await votingOtherAccount0.vote(proposalIds[1]);
+
+                const votingOtherAccount1 = voting.connect(otherAccounts[1]);
+
+                await votingOtherAccount1.vote(proposalIds[2]);
+
+                await voting.endVotingSession();
+
+                await expect(voting.pickWinner())
+                    .to
+                    .emit(voting, "Equality")
+                    .withArgs([proposalIds[0], proposalIds[1], proposalIds[2]], owner.address)
+                ;
+            });
+
+            it("Should revert at counting votes when not allowed", async () => {
+                const {voting, otherAccounts, proposalIds} = await loadFixture(deployAndVoteFixture);
+
+                await voting.startVotingSession();
+
+                await voting.vote(proposalIds[0]);
+
+                const votingOtherAccount0 = voting.connect(otherAccounts[0]);
+
+                await votingOtherAccount0.vote(proposalIds[1]);
+
+                await expect(voting.pickWinner())
+                    .to
+                    .be
+                    .revertedWith("Voting session is not finished")
+                ;
+            });
+
+            it("Should revert at counting votes when no vote has been submitted", async () => {
+                const {voting} = await loadFixture(deployAndVoteFixture);
+
+                await voting.startVotingSession();
+
+                await voting.endVotingSession();
+
+                await expect(voting.pickWinner())
+                    .to
+                    .be
+                    .revertedWith("No proposal has a single vote for the current voting")
+                ;
+            });
+
+            it("Should revert at counting votes when no proposal has been submitted", async () => {
+                const {voting} = await loadFixture(deployVotingFixture);
+
+                await voting.startProposalsRegistration();
+
+                await voting.endProposalsRegistration();
+
+                await voting.startVotingSession();
+
+                await voting.endVotingSession();
+
+                await expect(voting.pickWinner())
+                    .to
+                    .be
+                    .revertedWith("There is no proposal for this voting")
+                ;
+            });
+        });
     });
+
 });

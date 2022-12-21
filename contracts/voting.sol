@@ -25,7 +25,7 @@ contract Voting is Ownable {
     uint private _winningProposalId;
 
     /* @dev Store the proposals that have equal vote count */
-    uint[] private _tiedProposals;
+    Proposal[] private _tiedProposals;
 
     /* @notice Allows everybody to consult the history of the winning proposals */
     Proposal[] public winningProposalHistory;
@@ -67,7 +67,7 @@ contract Voting is Ownable {
 
     event WinningProposal(uint proposalId, address caller);
 
-    event Equality(uint[] proposalsId, address caller);
+    event Equality(address caller);
 
     modifier onlyVoter {
         require(_voters[msg.sender].isRegistered, "Address is not registered as allowed voter");
@@ -214,19 +214,19 @@ contract Voting is Ownable {
 
             // New equality
             } else if (proposals[proposalId].voteCount == proposals[_winningProposalId].voteCount) {
-                _tiedProposals.push(_winningProposalId);
-                _tiedProposals.push(proposalId);
+                _tiedProposals.push(proposals[_winningProposalId]);
+                _tiedProposals.push(proposals[proposalId]);
             }
         } else { // Previous equality
 
             // New winning proposal, no more equality
-            if (proposals[proposalId].voteCount > proposals[_tiedProposals[0]].voteCount) {
+            if (proposals[proposalId].voteCount > _tiedProposals[0].voteCount) {
                 _winningProposalId = proposalId;
                 delete _tiedProposals;
 
             // New proposal has equal votes as tied ones
-            } else if (proposals[proposalId].voteCount == proposals[_tiedProposals[0]].voteCount) {
-                _tiedProposals.push(proposalId);
+            } else if (proposals[proposalId].voteCount == _tiedProposals[0].voteCount) {
+                _tiedProposals.push(proposals[proposalId]);
             }
         }
 
@@ -247,7 +247,7 @@ contract Voting is Ownable {
         if (_tiedProposals.length > 0 ) {
             _voteStatus = WorkflowStatus.CountingEquality;
 
-            emit Equality(_tiedProposals, msg.sender);
+            emit Equality(msg.sender);
         } else {
             _voteStatus = WorkflowStatus.VotesTallied;
 

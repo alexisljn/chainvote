@@ -440,7 +440,7 @@ describe("Voting smart contract test", () => {
                 await expect(voting.pickWinner())
                     .to
                     .emit(voting, "Equality")
-                    .withArgs([proposalIds[0], proposalIds[1]], owner.address)
+                    .withArgs(owner.address)
                 ;
             });
 
@@ -464,7 +464,7 @@ describe("Voting smart contract test", () => {
                 await expect(voting.pickWinner())
                     .to
                     .emit(voting, "Equality")
-                    .withArgs([proposalIds[0], proposalIds[1], proposalIds[2]], owner.address)
+                    .withArgs(owner.address)
                 ;
             });
 

@@ -177,6 +177,10 @@ contract Voting is Ownable {
         emit ProposalRegistered(proposals.length - 1, msg.sender);
     }
 
+    function getProposals() external view returns(Proposal[] memory) {
+        return proposals;
+    }
+
     /*
     * @notice Allows voter to vote for a proposal
     * @param proposalId The id of the proposal the voter wants to vote for

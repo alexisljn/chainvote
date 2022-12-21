@@ -520,4 +520,109 @@ describe("Voting smart contract test", () => {
         });
     });
 
+    describe("Equality use cases", () => {
+        async function deployAndVoteToEqualityFixture() {
+            const Voting = await ethers.getContractFactory("Voting");
+
+            const [owner, ...otherAccounts] = await ethers.getSigners();
+
+            const voting: Voting = await Voting.deploy();
+
+            await voting.deployed();
+
+            await voting.registerVoter(owner.address);
+            await voting.registerVoter(otherAccounts[0].address);
+            await voting.registerVoter(otherAccounts[1].address);
+            await voting.registerVoter(otherAccounts[2].address);
+            await voting.registerVoter(otherAccounts[3].address);
+            await voting.registerVoter(otherAccounts[4].address);
+
+            await voting.startProposalsRegistration();
+
+            await voting.addProposal('Fixture');
+
+            await voting.addProposal('Fixture 2');
+
+            await voting.addProposal('Fixture 3');
+
+            await voting.endProposalsRegistration();
+
+            await voting.startVotingSession();
+
+            await voting.vote(0);
+
+            const votingOtherAccount0 = voting.connect(otherAccounts[0]);
+
+            await votingOtherAccount0.vote(0);
+
+            const votingOtherAccount1 = voting.connect(otherAccounts[1]);
+
+            await votingOtherAccount1.vote(1);
+
+            const votingOtherAccount2 = voting.connect(otherAccounts[2]);
+
+            await votingOtherAccount2.vote(1);
+
+            const votingOtherAccount3 = voting.connect(otherAccounts[3]);
+
+            await votingOtherAccount3.vote(2);
+
+            const votingOtherAccount4 = voting.connect(otherAccounts[4]);
+
+            await votingOtherAccount4.vote(2);
+
+            await voting.endVotingSession();
+
+            await voting.pickWinner();
+
+            return {voting, owner, otherAccounts};
+        }
+
+        describe("Creating new ballot", () => {
+            it("Should emit event when additional ballot successfully created", async () => {
+                const {voting, owner} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                await expect(voting.prepareNewBallot())
+                    .to
+                    .emit(voting, "NewBallotPrepared")
+                    .withArgs(owner.address)
+                ;
+            });
+
+            it("Should check that proposals has a length equal to tied proposals count after new ballot preparation", async () => {
+                const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                await voting.prepareNewBallot();
+
+                const proposals = await voting.getProposals();
+
+                expect(proposals.length).to.equal(3);
+            });
+
+            it("Should check that new ballot proposals have 0 votes", async () => {
+                const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                await voting.prepareNewBallot();
+
+                const firstProposal = await voting.proposals(0);
+                const secondProposal = await voting.proposals(1);
+                const thirdProposal = await voting.proposals(2);
+
+                expect(firstProposal.voteCount).to.equal(0);
+                expect(secondProposal.voteCount).to.equal(0);
+                expect(thirdProposal.voteCount).to.equal(0);
+            });
+
+            it("Should revert at new ballot preparation when not allowed", async () => {
+                const {voting} = await loadFixture(deployVotingFixture);
+
+                await expect(voting.prepareNewBallot())
+                    .to
+                    .be
+                    .revertedWith("New ballot can only be prepared for an equality")
+                ;
+            });
+        });
+    });
+
 });

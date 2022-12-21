@@ -623,6 +623,54 @@ describe("Voting smart contract test", () => {
                 ;
             });
         });
+
+        describe("Register as voter for new ballots", async () => {
+
+            it("Should emit event after voter register for new ballot", async () => {
+                const {voting, owner} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                await expect(voting.enableVoteForNewBallot())
+                    .to
+                    .emit(voting, "VoterRegistered")
+                    .withArgs(owner.address, owner.address)
+                ;
+            });
+
+            it("Should revert if voter wants to register for new ballot when not allowed", async () => {
+                const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                await voting.prepareNewBallot();
+
+                await expect(voting.enableVoteForNewBallot())
+                    .to
+                    .be
+                    .revertedWith("No need to register again as voter now")
+                ;
+            });
+
+            it("Should revert if non-registered address tries to register itself for new ballot", async () => {
+                const {voting, otherAccounts} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                const votingOtherAccount5 = voting.connect(otherAccounts[5]);
+
+                await expect(votingOtherAccount5.enableVoteForNewBallot())
+                    .to
+                    .be
+                    .revertedWith("You wasn't registered as voter for current voting")
+                ;
+            });
+
+            it("Should revert is voter is already registered for new ballot", async () => {
+                const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                await voting.enableVoteForNewBallot();
+
+                await expect(voting.enableVoteForNewBallot())
+                    .to
+                    .be.revertedWith("Already registered")
+                ;
+            });
+        });
     });
 
 });

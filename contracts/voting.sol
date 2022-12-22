@@ -22,7 +22,7 @@ contract Voting is Ownable {
     // Max proposals per voting ?
     uint8 private constant _maxProposalsPerVoting = 20;
 
-    uint private _winningProposalId;
+    uint8 private _winningProposalId;
 
     /* @dev Store the proposals that have equal vote count */
     Proposal[] private _tiedProposals;
@@ -185,7 +185,7 @@ contract Voting is Ownable {
     * @notice Allows voter to vote for a proposal
     * @param proposalId The id of the proposal the voter wants to vote for
     */
-    function vote(uint proposalId) external onlyVoter {
+    function vote(uint8 proposalId) external onlyVoter {
         require(_voteStatus == WorkflowStatus.VotingSessionStarted, "Vote cannot be submitted for the current voting");
 
         require(proposals.length > proposalId, "Proposal not found");

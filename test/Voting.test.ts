@@ -739,4 +739,29 @@ describe("Voting smart contract test", () => {
             ;
         });
     });
+
+    describe('Workflow status change (only RegisteringVoters)', () => {
+        it("Should emit event when owner starts voters registration", async () => {
+            const {voting, owner} = await loadFixture(deployAndVoteToEqualityFixture);
+
+            await voting.pickWinnerRandomly();
+
+            await expect(voting.registeringVoters())
+                .to
+                .emit(voting, "WorkflowStatusChange")
+                .withArgs(WorkflowStatus.VotesTallied, WorkflowStatus.RegisteringVoters, owner.address)
+            ;
+        });
+
+        it("Should revert if owner starts voters registration when not allowed", async () => {
+            const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+
+            await expect(voting.registeringVoters())
+                .to
+                .be
+                .revertedWith("Current voting is not finished")
+            ;
+        });
+    });
+
 });

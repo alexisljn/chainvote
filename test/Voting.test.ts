@@ -624,7 +624,7 @@ describe("Voting smart contract test", () => {
             });
         });
 
-        describe("Register as voter for new ballots", async () => {
+        describe("Register as voter for new ballots", () => {
 
             it("Should emit event after voter register for new ballot", async () => {
                 const {voting, owner} = await loadFixture(deployAndVoteToEqualityFixture);
@@ -668,6 +668,38 @@ describe("Voting smart contract test", () => {
                 await expect(voting.enableVoteForNewBallot())
                     .to
                     .be.revertedWith("Already registered")
+                ;
+            });
+        });
+
+        describe("Pick winner randomly", () => {
+            it("Should emit event when winning proposal has been picked randomly", async () => {
+                const {voting, owner} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                await expect(voting.pickWinnerRandomly())
+                    .to
+                    .emit(voting, "WinningProposal")
+                    .withArgs(anyUint, owner.address)
+                ;
+            });
+
+            it("Should check that winning proposal id picked randomly is correct", async () => {
+                const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                await voting.pickWinnerRandomly();
+
+                const winningProposalId = await voting.getWinningProposalId();
+
+                expect([0,1,2]).to.include(winningProposalId);
+            });
+
+            it("Should revert at picking randomly a winner when not allowed", async () => {
+                const {voting} = await loadFixture(deployVotingFixture);
+
+                await expect(voting.pickWinnerRandomly())
+                    .to
+                    .be
+                    .revertedWith("Winning proposal can only be randomly picked if there is an equality")
                 ;
             });
         });

@@ -706,4 +706,37 @@ describe("Voting smart contract test", () => {
         });
     });
 
+    describe('Reset Voting', () => {
+        it("Should emit event when reset voting successfully processed", async () => {
+            const {voting, owner} = await loadFixture(deployAndVoteToEqualityFixture);
+
+            await voting.pickWinnerRandomly();
+
+            await expect(voting.resetVoting())
+                .to
+                .emit(voting, "VotingReset")
+                .withArgs(owner.address)
+            ;
+        });
+
+        it("Should revert when consulting first proposal after reset", async () => {
+            const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+
+            await voting.pickWinnerRandomly();
+
+            await voting.resetVoting();
+
+            await expect(voting.proposals(0)).to.be.reverted;
+        });
+
+        it("Should revert at reset voting when not allowed", async () => {
+            const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+
+            await expect(voting.resetVoting())
+                .to
+                .be
+                .revertedWith("Resetting voting is allowed only when votes have been counted")
+            ;
+        });
+    });
 });

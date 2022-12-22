@@ -70,7 +70,10 @@ contract Voting is Ownable {
     event Equality(address caller);
 
     modifier onlyVoter {
-        require(_voters[msg.sender].isRegistered, "Address is not registered as allowed voter");
+        require(_voters[msg.sender].isRegistered &&
+            _voters[msg.sender].lastVotingSession == _votingSession.current(),
+            "Address is not registered as allowed voter"
+        );
         _;
     }
 
@@ -90,6 +93,8 @@ contract Voting is Ownable {
         require(!_voters[_address].isRegistered, "Voter is already registered");
 
         _voters[_address].isRegistered = true;
+
+        _voters[_address].lastVotingSession = _votingSession.current();
 
         emit VoterRegistered(_address, msg.sender);
     }
@@ -190,11 +195,7 @@ contract Voting is Ownable {
 
         require(proposals.length > proposalId, "Proposal not found");
 
-        uint256 currentVotingSession = _votingSession.current();
-
         Voter storage voter = _voters[msg.sender];
-
-        voter.lastVotingSession = currentVotingSession;
 
         voter.votedProposalId = proposalId;
 

@@ -764,4 +764,53 @@ describe("Voting smart contract test", () => {
         });
     });
 
+    describe("Helper functions", () => {
+        describe("canVote", () => {
+            it("Should return true when registered address is allowed to vote", async () => {
+                const {voting} = await loadFixture(deployAndAddProposalsFixture);
+
+                const canVote = await voting.canVote();
+
+                expect(canVote).true;
+            });
+
+            it("Should return false when non-registered address call function", async () => {
+                const {voting, otherAccounts} = await loadFixture(deployAndAddProposalsFixture);
+
+                const votingOtherAccounts4 = voting.connect(otherAccounts[4]);
+
+                const canVote = await votingOtherAccounts4.canVote();
+
+                expect(canVote).false;
+            });
+        });
+
+        describe("canRegisterItself", () => {
+            it("Should return true when registered address is allowed to register for new ballot", async () => {
+                const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                const canRegister = await voting.canRegisterItself();
+
+                expect(canRegister).true;
+            });
+
+            it("Should return false when non registered address is allowed to register for new ballot", async () => {
+                const {voting,otherAccounts} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                const votingOtherAccounts5 = voting.connect(otherAccounts[5]);
+
+                const canRegister = await votingOtherAccounts5.canRegisterItself();
+
+                expect(canRegister).false;
+            });
+
+            it("Should return false when registering itself is not allowed", async () => {
+                const {voting} = await loadFixture(deployVotingFixture);
+
+                const canRegister = await voting.canRegisterItself();
+
+                expect(canRegister).false;
+            });
+        });
+    });
 });

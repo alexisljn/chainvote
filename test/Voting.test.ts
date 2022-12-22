@@ -27,6 +27,91 @@ describe("Voting smart contract test", () => {
         return {voting, owner, otherAccounts};
     }
 
+    async function deployAndVoteFixture() {
+        const Voting = await ethers.getContractFactory("Voting");
+
+        const [owner, ...otherAccounts] = await ethers.getSigners();
+
+        const voting: Voting = await Voting.deploy();
+
+        await voting.deployed();
+
+        await voting.registerVoter(owner.address);
+        await voting.registerVoter(otherAccounts[0].address);
+        await voting.registerVoter(otherAccounts[1].address);
+        await voting.registerVoter(otherAccounts[2].address);
+        await voting.registerVoter(otherAccounts[3].address);
+
+        await voting.startProposalsRegistration();
+
+        await voting.addProposal('Fixture');
+
+        await voting.addProposal('Fixture 2');
+
+        await voting.addProposal('Fixture 3');
+
+        await voting.endProposalsRegistration();
+
+        return {voting, owner, otherAccounts, proposalIds: [0, 1, 2]};
+    }
+
+    async function deployAndVoteToEqualityFixture() {
+        const Voting = await ethers.getContractFactory("Voting");
+
+        const [owner, ...otherAccounts] = await ethers.getSigners();
+
+        const voting: Voting = await Voting.deploy();
+
+        await voting.deployed();
+
+        await voting.registerVoter(owner.address);
+        await voting.registerVoter(otherAccounts[0].address);
+        await voting.registerVoter(otherAccounts[1].address);
+        await voting.registerVoter(otherAccounts[2].address);
+        await voting.registerVoter(otherAccounts[3].address);
+        await voting.registerVoter(otherAccounts[4].address);
+
+        await voting.startProposalsRegistration();
+
+        await voting.addProposal('Fixture');
+
+        await voting.addProposal('Fixture 2');
+
+        await voting.addProposal('Fixture 3');
+
+        await voting.endProposalsRegistration();
+
+        await voting.startVotingSession();
+
+        await voting.vote(0);
+
+        const votingOtherAccount0 = voting.connect(otherAccounts[0]);
+
+        await votingOtherAccount0.vote(0);
+
+        const votingOtherAccount1 = voting.connect(otherAccounts[1]);
+
+        await votingOtherAccount1.vote(1);
+
+        const votingOtherAccount2 = voting.connect(otherAccounts[2]);
+
+        await votingOtherAccount2.vote(1);
+
+        const votingOtherAccount3 = voting.connect(otherAccounts[3]);
+
+        await votingOtherAccount3.vote(2);
+
+        const votingOtherAccount4 = voting.connect(otherAccounts[4]);
+
+        await votingOtherAccount4.vote(2);
+
+        await voting.endVotingSession();
+
+        await voting.pickWinner();
+
+        return {voting, owner, otherAccounts};
+    }
+
     describe("OnlyOwner test", () => {
         it("Should not revert if owner calls onlyOwner function", async () => {
             const {voting} = await loadFixture(deployVotingFixture);
@@ -292,34 +377,6 @@ describe("Voting smart contract test", () => {
     });
 
     describe("Vote", () => {
-        async function deployAndVoteFixture() {
-            const Voting = await ethers.getContractFactory("Voting");
-
-            const [owner, ...otherAccounts] = await ethers.getSigners();
-
-            const voting: Voting = await Voting.deploy();
-
-            await voting.deployed();
-
-            await voting.registerVoter(owner.address);
-            await voting.registerVoter(otherAccounts[0].address);
-            await voting.registerVoter(otherAccounts[1].address);
-            await voting.registerVoter(otherAccounts[2].address);
-            await voting.registerVoter(otherAccounts[3].address);
-
-            await voting.startProposalsRegistration();
-
-            await voting.addProposal('Fixture');
-
-            await voting.addProposal('Fixture 2');
-
-            await voting.addProposal('Fixture 3');
-
-            await voting.endProposalsRegistration();
-
-            return {voting, owner, otherAccounts, proposalIds: [0, 1, 2]};
-        }
-
         it("Should emit event when vote successfully registered", async () => {
             const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndVoteFixture);
 
@@ -522,63 +579,6 @@ describe("Voting smart contract test", () => {
     });
 
     describe("Equality use cases", () => {
-        async function deployAndVoteToEqualityFixture() {
-            const Voting = await ethers.getContractFactory("Voting");
-
-            const [owner, ...otherAccounts] = await ethers.getSigners();
-
-            const voting: Voting = await Voting.deploy();
-
-            await voting.deployed();
-
-            await voting.registerVoter(owner.address);
-            await voting.registerVoter(otherAccounts[0].address);
-            await voting.registerVoter(otherAccounts[1].address);
-            await voting.registerVoter(otherAccounts[2].address);
-            await voting.registerVoter(otherAccounts[3].address);
-            await voting.registerVoter(otherAccounts[4].address);
-
-            await voting.startProposalsRegistration();
-
-            await voting.addProposal('Fixture');
-
-            await voting.addProposal('Fixture 2');
-
-            await voting.addProposal('Fixture 3');
-
-            await voting.endProposalsRegistration();
-
-            await voting.startVotingSession();
-
-            await voting.vote(0);
-
-            const votingOtherAccount0 = voting.connect(otherAccounts[0]);
-
-            await votingOtherAccount0.vote(0);
-
-            const votingOtherAccount1 = voting.connect(otherAccounts[1]);
-
-            await votingOtherAccount1.vote(1);
-
-            const votingOtherAccount2 = voting.connect(otherAccounts[2]);
-
-            await votingOtherAccount2.vote(1);
-
-            const votingOtherAccount3 = voting.connect(otherAccounts[3]);
-
-            await votingOtherAccount3.vote(2);
-
-            const votingOtherAccount4 = voting.connect(otherAccounts[4]);
-
-            await votingOtherAccount4.vote(2);
-
-            await voting.endVotingSession();
-
-            await voting.pickWinner();
-
-            return {voting, owner, otherAccounts};
-        }
-
         describe("Creating new ballot", () => {
             it("Should emit event when additional ballot successfully created", async () => {
                 const {voting, owner} = await loadFixture(deployAndVoteToEqualityFixture);

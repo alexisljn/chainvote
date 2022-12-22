@@ -27,7 +27,7 @@ describe("Voting smart contract test", () => {
         return {voting, owner, otherAccounts};
     }
 
-    async function deployAndVoteFixture() {
+    async function deployAndAddProposalsFixture() {
         const Voting = await ethers.getContractFactory("Voting");
 
         const [owner, ...otherAccounts] = await ethers.getSigners();
@@ -378,7 +378,7 @@ describe("Voting smart contract test", () => {
 
     describe("Vote", () => {
         it("Should emit event when vote successfully registered", async () => {
-            const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndVoteFixture);
+            const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndAddProposalsFixture);
 
             await voting.startVotingSession();
 
@@ -398,7 +398,7 @@ describe("Voting smart contract test", () => {
         });
 
         it("Should update proposal vote count after vote", async () => {
-            const {voting, proposalIds} = await loadFixture(deployAndVoteFixture);
+            const {voting, proposalIds} = await loadFixture(deployAndAddProposalsFixture);
 
             await voting.startVotingSession();
 
@@ -410,7 +410,7 @@ describe("Voting smart contract test", () => {
         });
 
         it("Should revert if submitting vote when not allowed", async () => {
-            const {voting, proposalIds} = await loadFixture(deployAndVoteFixture);
+            const {voting, proposalIds} = await loadFixture(deployAndAddProposalsFixture);
 
             await expect(voting.vote(proposalIds[0]))
                 .to
@@ -420,7 +420,7 @@ describe("Voting smart contract test", () => {
         });
 
         it("Should revert if proposal is not found", async () => {
-            const {voting} = await loadFixture(deployAndVoteFixture);
+            const {voting} = await loadFixture(deployAndAddProposalsFixture);
 
             await voting.startVotingSession();
 
@@ -428,7 +428,7 @@ describe("Voting smart contract test", () => {
         })
 
         it("Should revert if voter has already voted", async () => {
-            const {voting, proposalIds} = await loadFixture(deployAndVoteFixture);
+            const {voting, proposalIds} = await loadFixture(deployAndAddProposalsFixture);
 
             await voting.startVotingSession();
 
@@ -443,7 +443,7 @@ describe("Voting smart contract test", () => {
 
         describe("Counting votes", () => {
             it("Should emit event in standard scenario for votes counting", async () => {
-                const {voting, owner, proposalIds} = await loadFixture(deployAndVoteFixture);
+                const {voting, owner, proposalIds} = await loadFixture(deployAndAddProposalsFixture);
 
                 await voting.startVotingSession();
 
@@ -459,7 +459,7 @@ describe("Voting smart contract test", () => {
             });
 
             it("Should emit event when votes are counted and proposal win after previous equality", async () => {
-                const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndVoteFixture);
+                const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndAddProposalsFixture);
 
                 await voting.startVotingSession();
 
@@ -483,7 +483,7 @@ describe("Voting smart contract test", () => {
             });
 
             it("Should emit event when equality at votes counting", async () => {
-                const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndVoteFixture);
+                const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndAddProposalsFixture);
 
                 await voting.startVotingSession();
 
@@ -503,7 +503,7 @@ describe("Voting smart contract test", () => {
             });
 
             it("Should emit equality event even if tie contains more of two proposals", async () => {
-                const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndVoteFixture);
+                const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndAddProposalsFixture);
 
                 await voting.startVotingSession();
 
@@ -527,7 +527,7 @@ describe("Voting smart contract test", () => {
             });
 
             it("Should revert at counting votes when not allowed", async () => {
-                const {voting, otherAccounts, proposalIds} = await loadFixture(deployAndVoteFixture);
+                const {voting, otherAccounts, proposalIds} = await loadFixture(deployAndAddProposalsFixture);
 
                 await voting.startVotingSession();
 
@@ -545,7 +545,7 @@ describe("Voting smart contract test", () => {
             });
 
             it("Should revert at counting votes when no vote has been submitted", async () => {
-                const {voting} = await loadFixture(deployAndVoteFixture);
+                const {voting} = await loadFixture(deployAndAddProposalsFixture);
 
                 await voting.startVotingSession();
 

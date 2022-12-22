@@ -327,6 +327,23 @@ contract Voting is Ownable {
         return _winningProposalId;
     }
 
+    /*
+    * @notice Allows administrator to reset all properties of contract in order to have clean state for next votings
+    */
+    function resetVoting() external onlyOwner {
+        require(_voteStatus == WorkflowStatus.VotesTallied, "Resetting voting is allowed only when votes have been counted");
+
+        winningProposalHistory.push(proposals[_winningProposalId]);
+
+        delete _winningProposalId;
+
+        delete proposals;
+
+        _votingSession.increment();
+
+        emit VotingReset(msg.sender);
+    }
+
 
     /*
     * @notice Allows everybody to know the voting status

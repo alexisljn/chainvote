@@ -344,6 +344,23 @@ contract Voting is Ownable {
         emit VotingReset(msg.sender);
     }
 
+    /*
+    * @dev Helper function to make easier frontend logic
+    */
+    function canVote() external view returns(bool) {
+        return _voters[msg.sender].isRegistered && _voters[msg.sender].lastVotingSession == _votingSession.current();
+    }
+
+    /*
+    * @dev Helper function to make easier frontend logic
+    */
+    function canRegisterItself() external view returns(bool) {
+        if (_voteStatus != WorkflowStatus.CountingEquality) {
+            return false;
+        }
+
+        return !_voters[msg.sender].isRegistered && _voters[msg.sender].lastVotingSession == _votingSession.current();
+    }
 
     /*
     * @notice Allows everybody to know the voting status

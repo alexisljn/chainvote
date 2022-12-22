@@ -1,6 +1,7 @@
 import {ethers} from "hardhat";
 import {Voting} from "../typechain-types";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
+import {anyUint} from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import {expect} from "chai";
 
 enum WorkflowStatus {

@@ -298,6 +298,34 @@ contract Voting is Ownable {
         emit VoterRegistered(msg.sender, msg.sender);
     }
 
+    /*
+    * @notice Allows administrator to pick randomly a proposal among those which has same vote count.
+    * @notice Should be used when no proposal won in multiple ballots.
+    */
+    function pickWinnerRandomly() external onlyOwner {
+        require(_voteStatus == WorkflowStatus.CountingEquality, "Winning proposal can only be randomly picked if there is an equality");
+
+        assert(_tiedProposals.length > 0);
+
+        uint8 randomIndex = uint8(uint(keccak256(abi.encodePacked(block.timestamp, block.number, block.basefee))) % _tiedProposals.length);
+
+        _winningProposalId = randomIndex;
+
+        _voteStatus = WorkflowStatus.VotesTallied;
+
+        emit WinningProposal(_winningProposalId, msg.sender);
+    }
+
+
+    /*
+    * @notice Allows everybody to consult the winning proposal at the end of a voting
+    */
+    function getWinningProposalId() external view returns(uint8) {
+        require(_voteStatus == WorkflowStatus.VotesTallied, "Voting is not over or has not began");
+
+        return _winningProposalId;
+    }
+
 
     /*
     * @notice Allows everybody to know the voting status

@@ -1,10 +1,12 @@
+import {NavLink} from "react-router-dom";
+
 function Nav() {
     return (
         <nav className="header-nav">
             <ul className="nav-links">
-                <li><a href="#">Home</a></li>
-                <li><a href="#">History</a></li>
-                <li><a href="#">Admin</a></li>
+                <li><NavLink to="/">Home</NavLink></li>
+                <li><NavLink to="history">History</NavLink></li>
+                <li><NavLink to="/admin">Admin</NavLink></li>
             </ul>
         </nav>
     )

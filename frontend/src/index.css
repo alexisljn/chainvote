@@ -56,6 +56,10 @@ code {
     color: #034fa9;
 }
 
+.nav-links a.active {
+    color: #034fa9;
+}
+
 .sidebar {
     grid-area: sidebar;
     padding: 30px;

@@ -1,7 +1,7 @@
 import {useCallback, useContext} from "react";
 import {ChainVoteContext} from "../../App";
-import {connectWallet, getChainLabel, shortenAddress} from "../../utils/ProviderUtils";
-import {formatAddressWithChecksum} from "../../utils/Utils";
+import {connectWallet, getChainLabel} from "../../utils/ProviderUtils";
+import {formatAddressWithChecksum, shortenAddress} from "../../utils/Utils";
 
 function UserInfo() {
 

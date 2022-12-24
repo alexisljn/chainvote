@@ -11,7 +11,7 @@ import {
     listenProviderEvents,
     PROVIDER_EVENT
 } from "./events-manager/ProviderEventsManager";
-import {getConnectedAccounts} from "./utils/ProviderUtils";
+import {getSupportedChainLabel, getConnectedAccounts, isChainIdSupported} from "./utils/ProviderUtils";
 
 interface ChainVoteContextInterface {
     provider: providers.Web3Provider | undefined | null;
@@ -113,7 +113,22 @@ function App() {
         )
     }
 
-    // if ChainID incorrect
+    if (!isChainIdSupported(chainId!)) {
+        //TODO Style message
+        return (
+            <ChainVoteContext.Provider value={{provider, address, chainId, changeAddress}}>
+                <div className="grid">
+                    <div className="header">
+                        <Header/>
+                    </div>
+                    <div className="sidebar">SIDEBAR</div>
+                    <div className="content">
+                        <p>Switch on <span className="network">{getSupportedChainLabel(parseInt(process.env.REACT_APP_CHAIN_ID!))}</span></p>
+                    </div>
+                </div>
+            </ChainVoteContext.Provider>
+        )
+    }
 
     return (
         <ChainVoteContext.Provider value={{provider, address, chainId, changeAddress}}>

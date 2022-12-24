@@ -1,6 +1,7 @@
 import {useCallback, useContext} from "react";
 import {ChainVoteContext} from "../../App";
 import {connectWallet} from "../../utils/ProviderUtils";
+import {formatAddressWithChecksum} from "../../utils/Utils";
 
 function UserInfo() {
 
@@ -10,12 +11,11 @@ function UserInfo() {
         try {
             const address = await connectWallet(provider!);
 
-            changeAddress(address);
+            changeAddress(formatAddressWithChecksum(address));
         }  catch (e) {
             console.error(e); // Logging for user
         }
     }, [changeAddress, provider]);
-
 
     if (!provider || !chainId) return (<></>);
 

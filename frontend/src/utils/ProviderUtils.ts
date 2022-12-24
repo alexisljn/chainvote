@@ -35,4 +35,19 @@ function getSupportedChainLabel(chainId: number): string {
     return Object.keys(supportedChains)[index];
 }
 
+function getChainLabel(networkInfo: any) {
+    const {name, chainId} = networkInfo;
+
+    switch (name) {
+        case 'homestead':
+            return 'ethereum';
+        case 'unknown':
+            if (chainId === supportedChains.hardhat) {
+                return 'hardhat';
+            }
+    }
+
+    return name;
+}
+
 export {connectWallet, getConnectedAccounts, isChainIdSupported, getSupportedChainLabel, getChainLabel}

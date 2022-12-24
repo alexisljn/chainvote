@@ -87,3 +87,7 @@ code {
 .btn.primary:hover {
     background-color: #012f68;
 }
+
+.network {
+    text-transform: capitalize;
+}

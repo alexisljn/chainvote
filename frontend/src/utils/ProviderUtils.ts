@@ -50,4 +50,8 @@ function getChainLabel(networkInfo: any) {
     return name;
 }
 
-export {connectWallet, getConnectedAccounts, isChainIdSupported, getSupportedChainLabel, getChainLabel}
+function shortenAddress(address: string) {
+    return `${address.slice(0, 4)}...${address.slice(-4)}`;
+}
+
+export {connectWallet, getConnectedAccounts, isChainIdSupported, getSupportedChainLabel, getChainLabel, shortenAddress}

@@ -49,6 +49,34 @@ function App() {
 
     }, []);
 
+    if (provider === undefined) {
+        //TODO Style message
+        return (
+            <div className="grid">
+                <Header/>
+                <div className="sidebar">SIDEBAR</div>
+                <div className="content">
+                    <p>Loading...</p>
+                </div>
+            </div>
+        )
+    }
+
+    if (provider === null) {
+        //TODO Style message
+        return (
+            <div className="grid">
+                <Header/>
+                <div className="sidebar">SIDEBAR</div>
+                <div className="content">
+                    <p>Please install metamask</p>
+                </div>
+            </div>
+        )
+    }
+
+    // if ChainID incorrect
+
     return (
         <div className="grid">
             <Header/>

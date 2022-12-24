@@ -85,7 +85,9 @@ function App() {
         //TODO Style message
         return (
             <div className="grid">
-                <Header/>
+                <div className="header">
+                    <Header/>
+                </div>
                 <div className="sidebar">SIDEBAR</div>
                 <div className="content">
                     <p>Loading...</p>
@@ -98,7 +100,9 @@ function App() {
         //TODO Style message
         return (
             <div className="grid">
-                <Header/>
+                <div className="header">
+                    <Header/>
+                </div>
                 <div className="sidebar">SIDEBAR</div>
                 <div className="content">
                     <p>Please install metamask</p>
@@ -112,7 +116,9 @@ function App() {
     return (
         <ChainVoteContext.Provider value={{provider, address, chainId, changeAddress}}>
         <div className="grid">
-            <Header/>
+            <div className="header">
+                <Header/>
+            </div>
             <div className="sidebar">SIDEBAR</div>
             <div className="content">
                 <Routes>

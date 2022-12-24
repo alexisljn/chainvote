@@ -20,4 +20,8 @@ async function getConnectedAccounts(provider: providers.Web3Provider): Promise<s
     return null;
 }
 
-export {connectWallet, getConnectedAccounts}
+function isChainIdSupported(chainId: number): boolean {
+    return parseInt(process.env.REACT_APP_CHAIN_ID!) === chainId;
+}
+
+export {connectWallet, getConnectedAccounts, isChainIdSupported, getSupportedChainLabel, getChainLabel}

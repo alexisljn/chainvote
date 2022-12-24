@@ -12,6 +12,19 @@ import {
     PROVIDER_EVENT
 } from "./events-manager/ProviderEventsManager";
 
+interface ChainVoteContextInterface {
+    provider: providers.Web3Provider | undefined | null;
+    address: string | null;
+    chainId: number | null;
+    changeAddress: (address: string | null) => void;
+}
+
+const ChainVoteContext = createContext<ChainVoteContextInterface>({
+    provider: undefined,
+    address: null,
+    chainId: null,
+    changeAddress: () => {}
+});
 function App() {
 
     const [provider, setProvider] = useState<providers.Web3Provider | undefined | null>(undefined);
@@ -26,6 +39,10 @@ function App() {
                 window.location.reload();
                 break;
         }
+    }, []);
+
+    const changeAddress = useCallback((address: string | null) => {
+        setAddress(address);
     }, []);
 
     useEffect(() => {
@@ -47,7 +64,22 @@ function App() {
             setProvider(null);
         }
 
-    }, []);
+    }, [handleLocallyProviderEvents]);
+
+    useEffect(() => {
+        if (!provider) return;
+
+        (async () => {
+            const chainId = (await provider.getNetwork()).chainId;
+            setChainId(chainId);
+
+            // Auto login
+
+
+            //TODO contract instantiation
+        })()
+    }, [provider]);
+
 
     if (provider === undefined) {
         //TODO Style message
@@ -78,6 +110,7 @@ function App() {
     // if ChainID incorrect
 
     return (
+        <ChainVoteContext.Provider value={{provider, address, chainId, changeAddress}}>
         <div className="grid">
             <Header/>
             <div className="sidebar">SIDEBAR</div>
@@ -90,7 +123,8 @@ function App() {
                 </Routes>
             </div>
         </div>
+        </ChainVoteContext.Provider>
     );
 }
 
-export default App;
+export {App, ChainVoteContext};

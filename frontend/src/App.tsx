@@ -5,16 +5,18 @@ import Home from "./components/pages/Home";
 import Error from "./components/pages/Error";
 import History from "./components/pages/History";
 import Admin from "./components/pages/Admin";
-import {providers} from "ethers";
+import {Contract, providers} from "ethers";
 import {
     cleanProviderEvents,
     listenProviderEvents,
     PROVIDER_EVENT
 } from "./events-manager/ProviderEventsManager";
 import {getSupportedChainLabel, getConnectedAccounts, isChainIdSupported} from "./utils/ProviderUtils";
+import {getVotingContractInstance} from "./utils/VotingUtils";
 
 interface ChainVoteContextInterface {
     provider: providers.Web3Provider | undefined | null;
+    votingContract: Contract | null;
     address: string | null;
     chainId: number | null;
     changeAddress: (address: string | null) => void;
@@ -22,6 +24,7 @@ interface ChainVoteContextInterface {
 
 const ChainVoteContext = createContext<ChainVoteContextInterface>({
     provider: undefined,
+    votingContract: null,
     address: null,
     chainId: null,
     changeAddress: () => {}
@@ -33,6 +36,8 @@ function App() {
     const [address, setAddress] = useState<string | null>(null);
 
     const [chainId, setChainId] = useState<number | null>(null);
+
+    const [votingContract, setVotingContract] = useState<Contract | null>(null);
 
     const handleLocallyProviderEvents = useCallback((e: any) => {
         switch (e.detail.type) {
@@ -78,7 +83,7 @@ function App() {
 
             setAddress(await getConnectedAccounts(provider));
 
-            //TODO contract instantiation
+            setVotingContract(getVotingContractInstance(provider));
         })()
     }, [provider]);
 
@@ -116,7 +121,7 @@ function App() {
     if (!isChainIdSupported(chainId!)) {
         //TODO Style message
         return (
-            <ChainVoteContext.Provider value={{provider, address, chainId, changeAddress}}>
+            <ChainVoteContext.Provider value={{provider, votingContract, address, chainId, changeAddress}}>
                 <div className="grid">
                     <div className="header">
                         <Header/>
@@ -131,7 +136,7 @@ function App() {
     }
 
     return (
-        <ChainVoteContext.Provider value={{provider, address, chainId, changeAddress}}>
+        <ChainVoteContext.Provider value={{provider, votingContract, address, chainId, changeAddress}}>
         <div className="grid">
             <div className="header">
                 <Header/>

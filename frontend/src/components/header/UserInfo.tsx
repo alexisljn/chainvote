@@ -1,6 +1,6 @@
 import {useCallback, useContext} from "react";
 import {ChainVoteContext} from "../../App";
-import {connectWallet} from "../../utils/ProviderUtils";
+import {connectWallet, getChainLabel, shortenAddress} from "../../utils/ProviderUtils";
 import {formatAddressWithChecksum} from "../../utils/Utils";
 
 function UserInfo() {
@@ -26,9 +26,9 @@ function UserInfo() {
     }
 
     return (
-        <div>
-            <p>{chainId}</p>
-            <p>{address}</p>
+        <div className="user-info">
+            <p className="user-network network">{getChainLabel(provider.network)}</p>
+            <p className="user-address">{shortenAddress(address!)}</p>
         </div>
 
     )

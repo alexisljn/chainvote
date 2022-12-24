@@ -91,3 +91,21 @@ code {
 .network {
     text-transform: capitalize;
 }
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-address {
+    padding: 5px 8px;
+    border-radius: 5px;
+    border: 5px solid #034fa9;
+}
+
+.user-network {
+    padding: 5px 12px;
+    border-radius: 10px;
+    background-color: #034fa9;
+}

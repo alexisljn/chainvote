@@ -38,6 +38,9 @@ function App() {
             case "chainChanged":
                 window.location.reload();
                 break;
+            case "accountsChanged":
+                setAddress(e.detail.value);
+                break;
         }
     }, []);
 

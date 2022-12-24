@@ -11,6 +11,7 @@ import {
     listenProviderEvents,
     PROVIDER_EVENT
 } from "./events-manager/ProviderEventsManager";
+import {getConnectedAccounts} from "./utils/ProviderUtils";
 
 interface ChainVoteContextInterface {
     provider: providers.Web3Provider | undefined | null;
@@ -73,11 +74,9 @@ function App() {
         if (!provider) return;
 
         (async () => {
-            const chainId = (await provider.getNetwork()).chainId;
-            setChainId(chainId);
+            setChainId((await provider.getNetwork()).chainId);
 
-            // Auto login
-
+            setAddress(await getConnectedAccounts(provider));
 
             //TODO contract instantiation
         })()

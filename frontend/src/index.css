@@ -14,6 +14,15 @@ code {
     monospace;
 }
 
+h1 {
+    font-size: 2rem;
+    font-weight: 400;
+}
+
+h2 {
+    font-weight: 400;
+}
+
 .grid {
     display: grid;
     grid-template-columns: 1fr 5fr;
@@ -71,7 +80,7 @@ code {
 }
 
 .top-grid-area-element {
-    margin: 0;
+    margin-top: 0;
 }
 
 .btn {
@@ -82,6 +91,10 @@ code {
     border: none;
 }
 
+.btn:focus {
+    outline: none;
+}
+
 .btn.primary {
     background-color: #034fa9;
     color: #f3f3f3;;
@@ -90,6 +103,11 @@ code {
 
 .btn.primary:hover {
     background-color: #012f68;
+}
+
+.btn:disabled,.btn:disabled:hover {
+    background-color: #848484;
+    cursor: default;
 }
 
 .network {
@@ -140,4 +158,46 @@ code {
 
 .primary {
     background-color: #034fa9;
+}
+
+.admin-status-steps {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 60px
+}
+
+.admin-status-step {
+    display: flex;
+    align-items: center;
+    gap: 40px
+}
+
+.step-index {
+    font-size: 1.5em;
+    padding: 6px 15px;
+    border-radius: 6px;
+}
+
+.register-voter {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.register-voter-input {
+    padding: 12px;
+    font-size: 15px;
+    font-weight: 400;
+    border: none;
+    border-radius: 5px;
+    width: 350px;
+}
+
+.register-voter-input.invalid {
+    border: 2px solid #ce1c1c;
+}
+
+.register-voter-input:focus {
+    outline: none;
 }

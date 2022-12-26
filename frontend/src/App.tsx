@@ -120,7 +120,7 @@ function App() {
 
             setPermissions({isOwner: isUserOwner, canVote: canUserVote, canRegisterItself: canUserRegisterItself});
         })()
-    }, [votingContract, address, chainId])
+    }, [votingContract, address, chainId]);
 
 
     if (provider === undefined) {

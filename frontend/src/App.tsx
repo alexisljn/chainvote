@@ -12,7 +12,7 @@ import {
     PROVIDER_EVENT
 } from "./events-manager/ProviderEventsManager";
 import {getSupportedChainLabel, getConnectedAccounts, isChainIdSupported} from "./utils/ProviderUtils";
-import {getVotingContractInstance} from "./utils/VotingUtils";
+import {canRegisterItself, canVote, getVotingContractInstance, isOwner} from "./utils/VotingUtils";
 import VotingStatuses from "./components/sidebar/VotingStatuses";
 import {formatAddressWithChecksum} from "./utils/Utils";
 
@@ -22,6 +22,7 @@ interface ChainVoteContextInterface {
     address: string | null;
     chainId: number | null;
     changeAddress: (address: string | null) => void;
+    permissions: {isOwner: boolean, canVote: boolean, canRegisterItself: boolean};
 }
 
 const ChainVoteContext = createContext<ChainVoteContextInterface>({
@@ -29,7 +30,12 @@ const ChainVoteContext = createContext<ChainVoteContextInterface>({
     votingContract: null,
     address: null,
     chainId: null,
-    changeAddress: () => {}
+    changeAddress: () => {},
+    permissions: {
+        isOwner: false,
+        canVote: false,
+        canRegisterItself: false,
+    },
 });
 function App() {
 
@@ -40,6 +46,12 @@ function App() {
     const [chainId, setChainId] = useState<number | null>(null);
 
     const [votingContract, setVotingContract] = useState<Contract | null>(null);
+
+    const [permissions, setPermissions] = useState({
+        isOwner: false,
+        canVote: false,
+        canRegisterItself: false,
+    });
 
     const handleLocallyProviderEvents = useCallback((e: any) => {
         switch (e.detail.type) {
@@ -91,8 +103,24 @@ function App() {
             ;
 
             setVotingContract(getVotingContractInstance(provider));
+
+            setPermissions(prevState => ({...prevState, ...{canVote: true}}));
         })()
     }, [provider]);
+
+    useEffect(() => {
+        if (!votingContract || !address || !chainId) return;
+
+        if (!isChainIdSupported(chainId)) return;
+
+        (async () => {
+            const isUserOwner = await isOwner(votingContract, address);
+            const canUserVote = await canVote(votingContract);
+            const canUserRegisterItself = await canRegisterItself(votingContract);
+
+            setPermissions({isOwner: isUserOwner, canVote: canUserVote, canRegisterItself: canUserRegisterItself});
+        })()
+    }, [votingContract, address, chainId])
 
 
     if (provider === undefined) {
@@ -128,7 +156,7 @@ function App() {
     if (!isChainIdSupported(chainId!)) {
         //TODO Style message
         return (
-            <ChainVoteContext.Provider value={{provider, votingContract, address, chainId, changeAddress}}>
+            <ChainVoteContext.Provider value={{provider, votingContract, address, chainId, changeAddress, permissions}}>
                 <div className="grid">
                     <div className="header">
                         <Header/>
@@ -143,7 +171,7 @@ function App() {
     }
 
     return (
-        <ChainVoteContext.Provider value={{provider, votingContract, address, chainId, changeAddress}}>
+        <ChainVoteContext.Provider value={{provider, votingContract, address, chainId, changeAddress, permissions}}>
         <div className="grid">
             <div className="header">
                 <Header/>

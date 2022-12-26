@@ -1,6 +1,15 @@
 import {Contract, ethers, providers} from "ethers";
 import VOTING_JSON from "../artifacts/contracts/voting.sol/Voting.json";
 
+export enum VotingStatus {
+    RegisteringVoters,
+    ProposalsRegistrationStarted,
+    ProposalsRegistrationEnded,
+    VotingSessionStarted,
+    VotingSessionEnded,
+    CountingEquality,
+    VotesTallied
+}
 function getVotingContractInstance(provider: providers.Web3Provider): Contract {
     return new ethers.Contract(process.env.REACT_APP_CONTRACT_ADDRESS!, VOTING_JSON.abi, provider);
 }

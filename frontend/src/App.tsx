@@ -14,6 +14,7 @@ import {
 import {getSupportedChainLabel, getConnectedAccounts, isChainIdSupported} from "./utils/ProviderUtils";
 import {getVotingContractInstance} from "./utils/VotingUtils";
 import VotingStatuses from "./components/sidebar/VotingStatuses";
+import {formatAddressWithChecksum} from "./utils/Utils";
 
 interface ChainVoteContextInterface {
     provider: providers.Web3Provider | undefined | null;
@@ -82,7 +83,12 @@ function App() {
         (async () => {
             setChainId((await provider.getNetwork()).chainId);
 
-            setAddress(await getConnectedAccounts(provider));
+            const connectedAccount = await getConnectedAccounts(provider);
+
+            connectedAccount !== null
+                ? setAddress(formatAddressWithChecksum(connectedAccount))
+                : setAddress(connectedAccount)
+            ;
 
             setVotingContract(getVotingContractInstance(provider));
         })()

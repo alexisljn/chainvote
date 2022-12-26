@@ -16,7 +16,7 @@ code {
 
 .grid {
     display: grid;
-    grid-template-columns: 1fr 6fr;
+    grid-template-columns: 1fr 5fr;
     grid-template-rows: 90px calc(100vh - 90px);
     grid-template-areas:
     "header header"
@@ -70,6 +70,10 @@ code {
     padding: 30px;
 }
 
+.top-grid-area-element {
+    margin: 0;
+}
+
 .btn {
     padding: 13px 17px;
     border-radius: 5px;
@@ -107,5 +111,33 @@ code {
 .user-network {
     padding: 5px 12px;
     border-radius: 10px;
+}
+
+.voting-status {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.voting-status-header {
+    text-align: center;
+    font-size: 1.1em;
+}
+
+.voting-status-index {
+    padding: 8px 15px;
+    border-radius: 7px;
+    background-color: #383838;
+}
+
+.voting-status-label {
+    padding: 8px 10px;
+    border-radius: 7px;
+    width: 100%;
+    background-color: #383838;
+    text-align: center;
+}
+
+.primary {
     background-color: #034fa9;
 }

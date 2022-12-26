@@ -13,6 +13,7 @@ import {
 } from "./events-manager/ProviderEventsManager";
 import {getSupportedChainLabel, getConnectedAccounts, isChainIdSupported} from "./utils/ProviderUtils";
 import {getVotingContractInstance} from "./utils/VotingUtils";
+import VotingStatuses from "./components/sidebar/VotingStatuses";
 
 interface ChainVoteContextInterface {
     provider: providers.Web3Provider | undefined | null;
@@ -95,7 +96,7 @@ function App() {
                 <div className="header">
                     <Header/>
                 </div>
-                <div className="sidebar">SIDEBAR</div>
+                <div className="sidebar"></div>
                 <div className="content">
                     <p>Loading...</p>
                 </div>
@@ -110,7 +111,7 @@ function App() {
                 <div className="header">
                     <Header/>
                 </div>
-                <div className="sidebar">SIDEBAR</div>
+                <div className="sidebar"></div>
                 <div className="content">
                     <p>Please install metamask</p>
                 </div>
@@ -126,7 +127,7 @@ function App() {
                     <div className="header">
                         <Header/>
                     </div>
-                    <div className="sidebar">SIDEBAR</div>
+                    <div className="sidebar"></div>
                     <div className="content">
                         <p>Switch on <span className="network">{getSupportedChainLabel(parseInt(process.env.REACT_APP_CHAIN_ID!))}</span></p>
                     </div>
@@ -141,7 +142,9 @@ function App() {
             <div className="header">
                 <Header/>
             </div>
-            <div className="sidebar">SIDEBAR</div>
+            <div className="sidebar">
+                <VotingStatuses/>
+            </div>
             <div className="content">
                 <Routes>
                     <Route path="/" element={<Home/>}/>

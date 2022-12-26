@@ -769,6 +769,8 @@ describe("Voting smart contract test", () => {
             it("Should return true when registered address is allowed to vote", async () => {
                 const {voting} = await loadFixture(deployAndAddProposalsFixture);
 
+                await voting.startVotingSession();
+
                 const canVote = await voting.canVote();
 
                 expect(canVote).true;
@@ -783,6 +785,14 @@ describe("Voting smart contract test", () => {
 
                 expect(canVote).false;
             });
+
+            it("Should return false when function called outside of voting session", async () => {
+                const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                const canVote = await voting.canVote();
+
+                expect(canVote).false;
+            })
         });
 
         describe("canRegisterItself", () => {

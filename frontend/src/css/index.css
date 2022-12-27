@@ -201,3 +201,66 @@ h2 {
 .register-voter-input:focus {
     outline: none;
 }
+
+.modal-background {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal {
+    padding: 15px 20px;
+    background-color: #ffffff;
+    color: #232323;
+    border-radius: 7px;
+    width: 30%;
+    /*position: relative;*/
+    /*top: -100px;*/
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-cross {
+    padding: 3px 6px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: #dc3545;
+    color: white;
+    transition: background-color 0.1s ease-out;
+}
+.modal-cross:hover {
+    background-color: #f33d3d;
+}
+
+.modal-cross:focus {
+    outline: none;
+}
+
+.modal-title {
+    flex-grow: 2;
+    margin: 0;
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: 500;
+}
+
+.modal-spinner {
+    display: flex;
+    justify-content: center;
+}
+
+.modal-text {
+    text-align: center;
+    font-style: italic;
+}

@@ -1,5 +1,6 @@
 import {Contract, ethers, providers} from "ethers";
 import VOTING_JSON from "../artifacts/contracts/voting.sol/Voting.json";
+import votersRegistration from "../components/admin/VotersRegistration";
 
 export enum VotingStatus {
     RegisteringVoters,
@@ -28,6 +29,18 @@ async function canRegisterItself(votingContract: Contract): Promise<boolean> {
     return await votingContract.canRegisterItself();
 }
 
+async function registerVoter(provider: providers.Web3Provider, votingContract: Contract, address: string) {
+    const votingContractWithSigner = getVotingContractWithSigner(provider, votingContract);
+
+    await votingContractWithSigner.registerVoter(address);
+}
+
+function getVotingContractWithSigner(provider: providers.Web3Provider, votingContract: Contract): Contract {
+    const signer = provider.getSigner();
+
+    return votingContract.connect(signer);
+}
+
 function generateStatusesList(currentStatus: number): string[] {
     const statusLabels = [
         "Voters registration",
@@ -46,4 +59,4 @@ function generateStatusesList(currentStatus: number): string[] {
     return statusLabels;
 }
 
-export {getVotingContractInstance, isOwner, canVote, canRegisterItself, generateStatusesList}
+export {getVotingContractInstance, isOwner, canVote, canRegisterItself, registerVoter, generateStatusesList}

@@ -15,6 +15,7 @@ import {getSupportedChainLabel, getConnectedAccounts, isChainIdSupported} from "
 import {canRegisterItself, canVote, getVotingContractInstance, isOwner} from "./utils/VotingUtils";
 import VotingStatuses from "./components/sidebar/VotingStatuses";
 import {formatAddressWithChecksum} from "./utils/Utils";
+import Modal from "./components/common/Modal";
 
 interface ChainVoteContextInterface {
     provider: providers.Web3Provider | undefined | null;
@@ -23,6 +24,7 @@ interface ChainVoteContextInterface {
     chainId: number | null;
     changeAddress: (address: string | null) => void;
     permissions: {isOwner: boolean, canVote: boolean, canRegisterItself: boolean};
+    modal: {show: () => void, hide: () => void};
 }
 
 const ChainVoteContext = createContext<ChainVoteContextInterface>({
@@ -36,6 +38,7 @@ const ChainVoteContext = createContext<ChainVoteContextInterface>({
         canVote: false,
         canRegisterItself: false,
     },
+    modal: {show: () => {}, hide: () => {}},
 });
 function App() {
 
@@ -52,6 +55,17 @@ function App() {
         canVote: false,
         canRegisterItself: false,
     });
+
+    const [showModal, setShowModal] = useState<boolean>(false);
+
+    const displayModal = useCallback(() => {
+        setShowModal(true);
+    }, []);
+
+    const hideModal = useCallback(() => {
+        console.log("el toto")
+        setShowModal(false);
+    }, []);
 
     const handleLocallyProviderEvents = useCallback((e: any) => {
         switch (e.detail.type) {
@@ -156,7 +170,7 @@ function App() {
     if (!isChainIdSupported(chainId!)) {
         //TODO Style message
         return (
-            <ChainVoteContext.Provider value={{provider, votingContract, address, chainId, changeAddress, permissions}}>
+            <ChainVoteContext.Provider value={{provider, votingContract, address, chainId, changeAddress, permissions, modal: {show: displayModal, hide: hideModal}}}>
                 <div className="grid">
                     <div className="header">
                         <Header/>
@@ -171,23 +185,26 @@ function App() {
     }
 
     return (
-        <ChainVoteContext.Provider value={{provider, votingContract, address, chainId, changeAddress, permissions}}>
-        <div className="grid">
-            <div className="header">
-                <Header/>
+        <ChainVoteContext.Provider value={{provider, votingContract, address, chainId, changeAddress, permissions, modal: {show: displayModal, hide: hideModal}}}>
+            {showModal &&
+                <Modal/>
+            }
+            <div className="grid">
+                <div className="header">
+                    <Header/>
+                </div>
+                <div className="sidebar">
+                    <VotingStatuses/>
+                </div>
+                <div className="content">
+                    <Routes>
+                        <Route path="/" element={<Home/>}/>
+                        <Route path="history" element={<History/>}/>
+                        <Route path="admin" element={<Admin/>}/>
+                        <Route path="*" element={<Error/>}/>
+                    </Routes>
+                </div>
             </div>
-            <div className="sidebar">
-                <VotingStatuses/>
-            </div>
-            <div className="content">
-                <Routes>
-                    <Route path="/" element={<Home/>}/>
-                    <Route path="history" element={<History/>}/>
-                    <Route path="admin" element={<Admin/>}/>
-                    <Route path="*" element={<Error/>}/>
-                </Routes>
-            </div>
-        </div>
         </ChainVoteContext.Provider>
     );
 }

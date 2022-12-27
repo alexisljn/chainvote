@@ -1,7 +1,12 @@
-import {ChangeEvent, useCallback, useEffect, useRef, useState} from "react";
-import {formatAddressWithChecksum} from "../../utils/Utils";
+import {ChangeEvent, useCallback, useContext, useEffect, useRef, useState} from "react";
+import {fireToast, formatAddressWithChecksum, getErrorMessage} from "../../utils/Utils";
+import {registerVoter} from "../../utils/VotingUtils";
+import {ChainVoteContext} from "../../App";
+import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
 
 function VotersRegistration() {
+
+    const {provider, votingContract, address, modal} = useContext(ChainVoteContext);
 
     const [voterAddress, setVoterAddress] = useState<string>("");
 
@@ -13,9 +18,36 @@ function VotersRegistration() {
         setVoterAddress(e.target.value);
     }, []);
 
-    const onRegisterVoterClick = useCallback(() => {
+    const onRegisterVoterClick = useCallback(async () => {
+        try {
+            await registerVoter(provider!, votingContract!, voterAddress);
 
-    }, [voterAddress]);
+            modal.show();
+        } catch (e: any) {
+            fireToast('error', getErrorMessage(e));
+        }
+
+    }, [voterAddress, provider, votingContract]);
+
+    const handleLocallyContractEvent = useCallback((e: any) => {
+        switch (e.detail.type) {
+            case 'voterRegistered':
+                const {voterAddress, caller} = e.detail.value;
+                if (caller === address) {
+                    fireToast('success', `${voterAddress} is now registered as voter !`);
+
+                    modal.hide();
+                }
+        }
+    }, [address]);
+
+    useEffect(() => {
+        window.addEventListener(CONTRACT_EVENT, handleLocallyContractEvent);
+
+        return () => {
+            window.removeEventListener(CONTRACT_EVENT, handleLocallyContractEvent);
+        }
+    }, [])
 
     useEffect(() => {
         try {
@@ -45,7 +77,11 @@ function VotersRegistration() {
                                onChange={onChangeVoterAddress}
                                ref={registerInputRef}
                         />
-                        <button className="btn primary" disabled={!isAddressCorrect}>Register</button>
+                        <button className="btn primary"
+                                onClick={onRegisterVoterClick}
+                                disabled={!isAddressCorrect}>
+                            Register
+                        </button>
                     </div>
                 </div>
                 <div className="admin-status-step">

@@ -16,6 +16,7 @@ import {canRegisterItself, canVote, getVotingContractInstance, isOwner} from "./
 import VotingStatuses from "./components/sidebar/VotingStatuses";
 import {formatAddressWithChecksum} from "./utils/Utils";
 import Modal from "./components/common/Modal";
+import {cleanContractEvents, listenContractEvents} from "./events-manager/VotingEventsManager";
 
 interface ChainVoteContextInterface {
     provider: providers.Web3Provider | undefined | null;
@@ -63,7 +64,6 @@ function App() {
     }, []);
 
     const hideModal = useCallback(() => {
-        console.log("el toto")
         setShowModal(false);
     }, []);
 
@@ -127,6 +127,8 @@ function App() {
 
         if (!isChainIdSupported(chainId)) return;
 
+        listenContractEvents(votingContract);
+
         (async () => {
             const isUserOwner = await isOwner(votingContract, address);
             const canUserVote = await canVote(votingContract);
@@ -134,6 +136,10 @@ function App() {
 
             setPermissions({isOwner: isUserOwner, canVote: canUserVote, canRegisterItself: canUserRegisterItself});
         })()
+
+        return () => {
+            cleanContractEvents(votingContract);
+        }
     }, [votingContract, address, chainId]);
 
 

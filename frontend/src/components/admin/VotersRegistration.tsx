@@ -42,12 +42,21 @@ function VotersRegistration() {
     const handleLocallyContractEvent = useCallback((e: any) => {
         switch (e.detail.type) {
             case 'voterRegistered':
-                const {voterAddress, caller} = e.detail.value;
-                if (caller === address) {
+                const {voterAddress, voterRegisteredCaller} = e.detail.value;
+                if (voterRegisteredCaller === address) {
                     fireToast('success', `${voterAddress} is now registered as voter !`);
 
                     modal.hide();
                 }
+                break;
+            case 'workflowStatusChange':
+                const {workflowStatusChangeCaller} = e.detail.value;
+                if (workflowStatusChangeCaller === address) {
+                    fireToast('success', 'Voting status has been updated !');
+
+                    modal.hide();
+                }
+                break;
         }
     }, [address]);
 

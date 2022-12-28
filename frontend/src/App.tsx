@@ -1,7 +1,7 @@
 import React, {createContext, useCallback, useEffect, useState} from 'react';
 import Header from "./components/header/Header";
 import {Route, Routes} from "react-router-dom";
-import Home from "./components/pages/Home";
+import Voting from "./components/pages/Voting";
 import Error from "./components/pages/Error";
 import History from "./components/pages/History";
 import Admin from "./components/pages/Admin";
@@ -204,7 +204,7 @@ function App() {
                 </div>
                 <div className="content">
                     <Routes>
-                        <Route path="/" element={<Home/>}/>
+                        <Route path="/" element={<Voting/>}/>
                         <Route path="history" element={<History/>}/>
                         <Route path="admin" element={<Admin/>}/>
                         <Route path="*" element={<Error/>}/>

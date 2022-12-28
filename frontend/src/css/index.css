@@ -23,6 +23,10 @@ h2 {
     font-weight: 400;
 }
 
+textarea {
+
+}
+
 .grid {
     display: grid;
     grid-template-columns: 1fr 5fr;
@@ -264,4 +268,57 @@ h2 {
     margin-top: 20px;
     text-align: center;
     font-style: italic;
+}
+
+.card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-gap: 40px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background-color: #232323;
+    padding: 0 20px;
+    border-radius: 10px;
+}
+
+.card-text {
+    font-size: 1.1em;
+}
+
+.card-btn {
+    padding: 8px 12px;
+}
+
+.card-vote-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-vote-count {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.card-vote-badge {
+    font-size: 1.2em;
+    padding: 0 5px 2px 5px;
+    border-radius: 4px;
+    background-color: #4d4d4d;
+}
+
+.proposal-textarea {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 15px;
+    font-weight: 400;
+    margin-bottom: 20px;
+}
+
+.proposal-textarea {
+    outline: none;
 }

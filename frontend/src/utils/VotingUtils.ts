@@ -11,6 +11,7 @@ export enum VotingStatus {
     CountingEquality,
     VotesTallied
 }
+
 function getVotingContractInstance(provider: providers.Web3Provider): Contract {
     return new ethers.Contract(process.env.REACT_APP_CONTRACT_ADDRESS!, VOTING_JSON.abi, provider);
 }
@@ -33,6 +34,12 @@ async function registerVoter(provider: providers.Web3Provider, votingContract: C
     const votingContractWithSigner = getVotingContractWithSigner(provider, votingContract);
 
     await votingContractWithSigner.registerVoter(address);
+}
+
+async function startProposalsRegistration(provider: providers.Web3Provider, votingContract: Contract) {
+    const votingContractWithSigner = getVotingContractWithSigner(provider, votingContract);
+
+    await votingContractWithSigner.startProposalsRegistration();
 }
 
 function getVotingContractWithSigner(provider: providers.Web3Provider, votingContract: Contract): Contract {
@@ -59,4 +66,12 @@ function generateStatusesList(currentStatus: number): string[] {
     return statusLabels;
 }
 
-export {getVotingContractInstance, isOwner, canVote, canRegisterItself, registerVoter, generateStatusesList}
+export {
+    getVotingContractInstance,
+    isOwner,
+    canVote,
+    canRegisterItself,
+    registerVoter,
+    startProposalsRegistration,
+    generateStatusesList,
+}

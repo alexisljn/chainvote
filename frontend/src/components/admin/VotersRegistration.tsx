@@ -1,6 +1,6 @@
 import {ChangeEvent, useCallback, useContext, useEffect, useRef, useState} from "react";
 import {fireToast, formatAddressWithChecksum, getErrorMessage} from "../../utils/Utils";
-import {registerVoter} from "../../utils/VotingUtils";
+import {registerVoter, startProposalsRegistration} from "../../utils/VotingUtils";
 import {ChainVoteContext} from "../../App";
 import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
 
@@ -28,6 +28,16 @@ function VotersRegistration() {
         }
 
     }, [voterAddress, provider, votingContract]);
+
+    const onStartProposalsRegistrationClick =  useCallback(async () => {
+        try {
+            await startProposalsRegistration(provider!, votingContract!);
+
+            modal.show()
+        } catch (e: any) {
+            fireToast('error', getErrorMessage(e));
+        }
+    }, [provider, votingContract]);
 
     const handleLocallyContractEvent = useCallback((e: any) => {
         switch (e.detail.type) {
@@ -87,7 +97,9 @@ function VotersRegistration() {
                 <div className="admin-status-step">
                     <div className="step-index primary">2</div>
                     <div className="">
-                        <button className="btn primary">Start proposals registration</button>
+                        <button className="btn primary" onClick={onStartProposalsRegistrationClick}>
+                            Start proposals registration
+                        </button>
                     </div>
                 </div>
             </div>

@@ -1,44 +1,47 @@
 import {useContext, useEffect, useState} from "react";
 import {ChainVoteContext} from "../../App";
-import CardGrid from "../common/CardGrid";
+import {VotingStatus} from "../../utils/VotingUtils";
+import ProposalRegistration from "../voting/ProposalRegistration";
 
-function Home() {
+function Voting() {
 
     const {votingContract} = useContext(ChainVoteContext);
 
-    const [proposals, setProposals] = useState<any>([]);
+    const [votingStatus, setVotingStatus] = useState<number | null>(null);
 
     useEffect(() => {
         if (!votingContract) return
 
-        const fixtures = [
-            {description: 'Fixture 1', voteCount: 0},
-            {description: 'Fixture 2', voteCount: 0},
-            {description: 'Fixture 3', voteCount: 0},
-            {description: 'Fixture 4', voteCount: 0},
-            {description: 'Fixture 5', voteCount: 0}
-        ];
-
-        setProposals(fixtures);
+        (async () => {
+            setVotingStatus(await votingContract!.getStatus());
+        })()
 
     }, [votingContract])
 
+    if (!votingContract || !votingStatus) {
+        return (
+            <div>
+                <h1 className="top-grid-area-element">Voting</h1>
+                <p>Loading...</p>
+            </div>
+        )
+    }
+
+    switch (votingStatus) {
+        case VotingStatus.ProposalsRegistrationStarted:
+            return (
+                <div>
+                    <h1 className="top-grid-area-element">Voting</h1>
+                    <ProposalRegistration/>
+                </div>
+            )
+    }
+
     return (
         <div>
-            <h1 className="top-grid-area-element">Voting</h1>
-            <CardGrid proposals={proposals}/>
-            <div>
-               <h2>Add a proposal</h2>
-                <div>
-                    <textarea className="proposal-textarea"
-                              placeholder="Proposal description"
-                              cols={100}
-                              rows={10}></textarea>
-                </div>
-                <button className="btn primary">Add proposal</button>
-            </div>
+            Error
         </div>
     )
 }
 
-export default Home;
+export default Voting;

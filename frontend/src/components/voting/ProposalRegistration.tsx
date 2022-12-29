@@ -1,29 +1,60 @@
 import CardGrid from "../common/CardGrid";
-import {useContext, useEffect, useState} from "react";
+import {ChangeEvent, useCallback, useContext, useEffect, useState} from "react";
 import {ChainVoteContext} from "../../App";
+import {addProposal, getProposals} from "../../utils/VotingUtils";
+import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
+import {fireToast} from "../../utils/Utils";
 
 
 
 function ProposalRegistration() {
 
-    const {votingContract} = useContext(ChainVoteContext);
+    const {provider, votingContract, address, modal} = useContext(ChainVoteContext);
 
     const [proposals, setProposals] = useState<any>([]);
 
+    const [submittedProposal, setSubmittedProposal] = useState<string>('');
+
+    const onSubmittedProposalChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) =>{
+       setSubmittedProposal(e.target.value);
+    }, [])
+
+    const onAddProposalClick = useCallback(async () => {
+        await addProposal(provider!, votingContract!, submittedProposal);
+
+        modal.show();
+    }, [submittedProposal, provider, votingContract, modal]);
+
+    const handleLocallyContractEvent = useCallback(async (e: any) => {
+        switch (e.detail.type) {
+            case 'proposalRegistered':
+                const {proposalRegisteredCaller} = e.detail.value;
+
+                if (address === proposalRegisteredCaller) {
+                    modal.hide();
+
+                    fireToast('success', 'Your proposal has been submitted !');
+
+                    setProposals(await getProposals(votingContract!));
+                }
+
+                break;
+        }
+    }, [votingContract, address, modal]);
+
+
     useEffect(() => {
-        if (!votingContract) return
+        window.addEventListener(CONTRACT_EVENT, handleLocallyContractEvent);
 
-        const fixtures = [
-            {description: 'Fixture 1', voteCount: 0},
-            {description: 'Fixture 2', voteCount: 0},
-            {description: 'Fixture 3', voteCount: 0},
-            {description: 'Fixture 4', voteCount: 0},
-            {description: 'Fixture 5', voteCount: 0}
-        ];
+        (async () => {
+            setProposals(await getProposals(votingContract!));
+        })();
 
-        setProposals(fixtures);
+        return () => {
+            window.removeEventListener(CONTRACT_EVENT, handleLocallyContractEvent);
+        }
 
-    }, [votingContract])
+    }, [votingContract, handleLocallyContractEvent]);
 
     return (
         <>
@@ -34,9 +65,13 @@ function ProposalRegistration() {
                     <textarea className="proposal-textarea"
                               placeholder="Proposal description"
                               cols={100}
-                              rows={10}></textarea>
+                              rows={10}
+                              value={submittedProposal}
+                              onChange={onSubmittedProposalChange}></textarea>
                 </div>
-                <button className="btn primary">Add proposal</button>
+                <button className="btn primary" onClick={onAddProposalClick} disabled={submittedProposal.length === 0}>
+                    Add proposal
+                </button>
             </div>
         </>
     )

@@ -3,6 +3,7 @@ import {ChainVoteContext} from "../../App";
 import {VotingStatus} from "../../utils/VotingUtils";
 import ProposalRegistration from "../voting/ProposalRegistration";
 import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
+import ProposalRegistrationEnded from "../voting/ProposalRegistrationEnded";
 
 function Voting() {
 
@@ -54,6 +55,13 @@ function Voting() {
                 <div>
                     <h1 className="top-grid-area-element">Voting</h1>
                     <ProposalRegistration/>
+                </div>
+            )
+        case VotingStatus.ProposalsRegistrationEnded:
+            return (
+                <div>
+                    <h1 className="top-grid-area-element">Voting</h1>
+                    <ProposalRegistrationEnded/>
                 </div>
             )
     }

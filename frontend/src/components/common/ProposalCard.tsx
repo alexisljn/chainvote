@@ -1,28 +1,34 @@
-import {useContext} from "react";
+import {useContext, useEffect, useState} from "react";
 import {ChainVoteContext} from "../../App";
+import {Proposal} from "../../utils/VotingUtils";
+import {useLocation} from "react-router-dom";
 
 interface ProposalCardProps {
-    proposal: { description: string, voteCount: number }
+    proposal: Proposal
 }
 
 function ProposalCard({proposal}: ProposalCardProps) {
 
     const {permissions} = useContext(ChainVoteContext);
 
-    const {canVote} = permissions;
+    const [isAdminPage, setIsAdminPage] = useState<boolean>(false);
 
-    let testCanVote = true;
+    const location = useLocation();
+
+    useEffect(() => {
+        setIsAdminPage(location.pathname.includes('admin'))
+    }, [location]);
+
+    const {canVote} = permissions;
 
     return (
         <div className="card">
-            <div>
-                <p className="card-text">{proposal.description}</p>
-                <div className="card-vote-section">
-                    {testCanVote &&
-                        <button className="btn card-btn primary">Vote</button>
-                    }
-                    <p className="card-vote-count">Vote count <span className="card-vote-badge">{proposal.voteCount}</span></p>
-                </div>
+            <p className="card-text">{proposal.description}</p>
+            <div className="card-vote-section">
+                {(canVote && !isAdminPage) &&
+                    <button className="btn card-btn primary">Vote</button>
+                }
+                <p className="card-vote-count">Vote count <span className="card-vote-badge">{proposal.voteCount.toString()}</span></p>
             </div>
         </div>
     )

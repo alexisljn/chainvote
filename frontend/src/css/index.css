@@ -281,6 +281,9 @@ textarea {
     background-color: #232323;
     padding: 0 20px;
     border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .card-text {

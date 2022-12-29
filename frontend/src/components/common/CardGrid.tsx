@@ -18,7 +18,7 @@ function CardGrid({proposals}: CardGridProps) {
     return (
         <div className="card-grid">
             {proposals.map((proposal: any, index: number) => (
-                <ProposalCard proposal={proposal} key={index}/>
+                <ProposalCard proposal={proposal} key={index} index={index}/>
             ))}
         </div>
     )

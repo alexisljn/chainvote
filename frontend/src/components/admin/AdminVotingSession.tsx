@@ -7,7 +7,7 @@ import {fireToast, getErrorMessage} from "../../utils/Utils";
 
 function AdminVotingSession() {
 
-    const {provider, votingContract, modal} = useContext(ChainVoteContext);
+    const {provider, votingContract, address, modal} = useContext(ChainVoteContext);
 
     const [proposals, setProposals] = useState<Proposal[]>([]);
 
@@ -16,8 +16,16 @@ function AdminVotingSession() {
             case 'voted':
                 setProposals(await getProposals(votingContract!));
                 break;
+            case 'workflowStatusChange':
+                const {workflowStatusChangeCaller} = e.detail.value;
+                if (workflowStatusChangeCaller === address) {
+                    fireToast('success', 'Voting status has been updated !');
+
+                    modal.hide();
+                }
+                break;
         }
-    }, [votingContract]);
+    }, [votingContract, address, modal]);
 
     const onEndVotingSessionClick =  useCallback(async () => {
         try {

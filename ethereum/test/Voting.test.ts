@@ -719,6 +719,20 @@ describe("Voting smart contract test", () => {
             ;
         });
 
+        it("Should emit event when reset voting successfully processed with no votes for no proposal", async () => {
+            const {voting, owner} = await loadFixture(deployAndAddProposalsFixture);
+
+            await voting.startVotingSession();
+
+            await voting.endVotingSession();
+
+            await expect(voting.resetVoting())
+                .to
+                .emit(voting, "VotingReset")
+                .withArgs(owner.address)
+            ;
+        });
+
         it("Should revert when consulting first proposal after reset", async () => {
             const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
 

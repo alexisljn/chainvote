@@ -319,11 +319,9 @@ contract Voting is Ownable {
 
 
     /*
-    * @notice Allows everybody to consult the winning proposal at the end of a voting
+    * @notice Allows everybody to consult the winning proposal
     */
     function getWinningProposalId() external view returns(uint8) {
-        require(_voteStatus == WorkflowStatus.VotesTallied, "Voting is not over or has not began");
-
         return _winningProposalId;
     }
 
@@ -331,7 +329,10 @@ contract Voting is Ownable {
     * @notice Allows administrator to reset all properties of contract in order to have clean state for next votings
     */
     function resetVoting() external onlyOwner {
-        require(_voteStatus == WorkflowStatus.VotesTallied, "Resetting voting is allowed only when votes have been counted");
+        require(_voteStatus == WorkflowStatus.VotesTallied ||
+            (_voteStatus == WorkflowStatus.VotingSessionEnded && proposals[_winningProposalId].voteCount == 0),
+            "Resetting voting is allowed only when votes have been counted"
+        );
 
         winningProposalHistory.push(proposals[_winningProposalId]);
 

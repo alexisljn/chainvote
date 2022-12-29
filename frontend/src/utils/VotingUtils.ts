@@ -46,6 +46,18 @@ async function startProposalsRegistration(provider: providers.Web3Provider, voti
     await votingContractWithSigner.startProposalsRegistration();
 }
 
+async function addProposal(provider: providers.Web3Provider, votingContract: Contract, description: string) {
+    const votingContractWithSigner = getVotingContractWithSigner(provider, votingContract);
+
+    await votingContractWithSigner.addProposal(description);
+}
+
+async function getProposals(votingContract: Contract): Promise<Proposal[]> {
+    const proposals = await votingContract.getProposals();
+
+    return generateProposals(proposals);
+}
+
 function getVotingContractWithSigner(provider: providers.Web3Provider, votingContract: Contract): Contract {
     const signer = provider.getSigner();
 
@@ -81,5 +93,7 @@ export {
     canRegisterItself,
     registerVoter,
     startProposalsRegistration,
+    addProposal,
+    getProposals,
     generateStatusesList,
 }

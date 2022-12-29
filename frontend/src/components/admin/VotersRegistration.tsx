@@ -27,7 +27,7 @@ function VotersRegistration() {
             fireToast('error', getErrorMessage(e));
         }
 
-    }, [voterAddress, provider, votingContract]);
+    }, [voterAddress, provider, votingContract, modal]);
 
     const onStartProposalsRegistrationClick =  useCallback(async () => {
         try {
@@ -37,7 +37,7 @@ function VotersRegistration() {
         } catch (e: any) {
             fireToast('error', getErrorMessage(e));
         }
-    }, [provider, votingContract]);
+    }, [provider, votingContract, modal]);
 
     const handleLocallyContractEvent = useCallback((e: any) => {
         switch (e.detail.type) {
@@ -58,7 +58,7 @@ function VotersRegistration() {
                 }
                 break;
         }
-    }, [address]);
+    }, [address, modal]);
 
     useEffect(() => {
         window.addEventListener(CONTRACT_EVENT, handleLocallyContractEvent);
@@ -66,7 +66,7 @@ function VotersRegistration() {
         return () => {
             window.removeEventListener(CONTRACT_EVENT, handleLocallyContractEvent);
         }
-    }, [])
+    }, [handleLocallyContractEvent]);
 
     useEffect(() => {
         try {

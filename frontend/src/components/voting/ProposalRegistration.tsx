@@ -5,11 +5,9 @@ import {addProposal, getProposals} from "../../utils/VotingUtils";
 import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
 import {fireToast} from "../../utils/Utils";
 
-
-
 function ProposalRegistration() {
 
-    const {provider, votingContract, address, modal} = useContext(ChainVoteContext);
+    const {provider, votingContract, address, modal, permissions} = useContext(ChainVoteContext);
 
     const [proposals, setProposals] = useState<any>([]);
 
@@ -59,20 +57,23 @@ function ProposalRegistration() {
     return (
         <>
             <CardGrid proposals={proposals}/>
-            <div>
-                <h2>Add a proposal</h2>
+            {permissions.canAddProposal &&
                 <div>
-                    <textarea className="proposal-textarea"
-                              placeholder="Proposal description"
-                              cols={100}
-                              rows={10}
-                              value={submittedProposal}
-                              onChange={onSubmittedProposalChange}></textarea>
+                    <h2>Add a proposal</h2>
+                    <div>
+                        <textarea className="proposal-textarea"
+                                  placeholder="Proposal description"
+                                  cols={100}
+                                  rows={10}
+                                  value={submittedProposal}
+                                  onChange={onSubmittedProposalChange}></textarea>
+                    </div>
+
+                        <button className="btn primary" onClick={onAddProposalClick} disabled={submittedProposal.length === 0}>
+                            Add proposal
+                        </button>
                 </div>
-                <button className="btn primary" onClick={onAddProposalClick} disabled={submittedProposal.length === 0}>
-                    Add proposal
-                </button>
-            </div>
+            }
         </>
     )
 }

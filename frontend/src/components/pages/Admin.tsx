@@ -31,7 +31,7 @@ function Admin() {
         return () => {
             window.removeEventListener(CONTRACT_EVENT, handleLocallyContractEvent);
         }
-    }, [votingContract])
+    }, [votingContract, handleLocallyContractEvent]);
 
     useEffect(() => {
         const {isOwner} = permissions;

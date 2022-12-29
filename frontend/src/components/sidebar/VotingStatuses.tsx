@@ -30,7 +30,7 @@ function VotingStatuses() {
         return () => {
             window.removeEventListener(CONTRACT_EVENT, handleLocallyContractEvent);
         }
-    }, [votingContract]);
+    }, [votingContract, handleLocallyContractEvent]);
 
     useEffect(() => {
         if (currentStatus === null) return;

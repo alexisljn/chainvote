@@ -1,6 +1,5 @@
-import {Contract, ethers, providers} from "ethers";
+import {BigNumber, Contract, ethers, providers} from "ethers";
 import VOTING_JSON from "../artifacts/contracts/voting.sol/Voting.json";
-import votersRegistration from "../components/admin/VotersRegistration";
 
 export enum VotingStatus {
     RegisteringVoters,
@@ -10,6 +9,11 @@ export enum VotingStatus {
     VotingSessionEnded,
     CountingEquality,
     VotesTallied
+}
+
+export interface Proposal {
+    description: string;
+    voteCount: BigNumber
 }
 
 function getVotingContractInstance(provider: providers.Web3Provider): Contract {
@@ -64,6 +68,10 @@ function generateStatusesList(currentStatus: number): string[] {
     }
 
     return statusLabels;
+}
+
+function generateProposals(proposals: any[]): Proposal[] {
+    return proposals.map(proposal => ({description: proposal.description, voteCount: proposal.voteCount}));
 }
 
 export {

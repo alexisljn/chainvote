@@ -4,7 +4,7 @@ import {registerVoter, startProposalsRegistration} from "../../utils/VotingUtils
 import {ChainVoteContext} from "../../App";
 import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
 
-function VotersRegistration() {
+function AdminVotersRegistration() {
 
     const {provider, votingContract, address, modal} = useContext(ChainVoteContext);
 
@@ -105,7 +105,7 @@ function VotersRegistration() {
                 </div>
                 <div className="admin-status-step">
                     <div className="step-index primary">2</div>
-                    <div className="">
+                    <div>
                         <button className="btn primary" onClick={onStartProposalsRegistrationClick}>
                             Start proposals registration
                         </button>
@@ -116,4 +116,4 @@ function VotersRegistration() {
     )
 }
 
-export default VotersRegistration
+export default AdminVotersRegistration

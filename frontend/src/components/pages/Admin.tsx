@@ -1,8 +1,9 @@
 import {useCallback, useContext, useEffect, useState} from "react";
 import {ChainVoteContext} from "../../App";
-import VotersRegistration from "../admin/VotersRegistration";
+import AdminVotersRegistration from "../admin/AdminVotersRegistration";
 import {VotingStatus} from "../../utils/VotingUtils";
 import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
+import AdminProposalsRegistration from "../admin/AdminProposalsRegistration";
 
 function Admin() {
 
@@ -55,14 +56,14 @@ function Admin() {
             return (
                 <div>
                     <h1 className="top-grid-area-element">Voting administration</h1>
-                    <VotersRegistration/>
+                    <AdminVotersRegistration/>
                 </div>
             )
         case VotingStatus.ProposalsRegistrationStarted:
             return (
                 <div>
                     <h1 className="top-grid-area-element">Voting administration</h1>
-                    <p>Proposals registration</p>
+                    <AdminProposalsRegistration/>
                 </div>
             )
     }

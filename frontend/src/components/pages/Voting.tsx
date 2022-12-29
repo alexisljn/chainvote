@@ -3,7 +3,7 @@ import {ChainVoteContext} from "../../App";
 import {VotingStatus} from "../../utils/VotingUtils";
 import ProposalRegistration from "../voting/ProposalRegistration";
 import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
-import ProposalRegistrationEnded from "../voting/ProposalRegistrationEnded";
+import PeriodEnded from "../voting/PeriodEnded";
 import VotingSession from "../voting/VotingSession";
 
 function Voting() {
@@ -62,7 +62,7 @@ function Voting() {
             return (
                 <div>
                     <h1 className="top-grid-area-element">Voting</h1>
-                    <ProposalRegistrationEnded/>
+                    <PeriodEnded period="proposal"/>
                 </div>
             )
         case VotingStatus.VotingSessionStarted:
@@ -70,6 +70,13 @@ function Voting() {
                 <div>
                     <h1 className="top-grid-area-element">Voting</h1>
                     <VotingSession/>
+                </div>
+            )
+        case VotingStatus.VotingSessionEnded:
+            return (
+                <div>
+                    <h1 className="top-grid-area-element">Voting</h1>
+                    <PeriodEnded period="voting"/>
                 </div>
             )
     }

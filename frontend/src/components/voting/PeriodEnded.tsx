@@ -3,7 +3,10 @@ import {useContext, useEffect, useState} from "react";
 import {ChainVoteContext} from "../../App";
 import {getProposals, Proposal} from "../../utils/VotingUtils";
 
-function ProposalRegistrationEnded() {
+interface PeriodEndedProps {
+    period: "proposal" | "voting"
+}
+function PeriodEnded({period}: PeriodEndedProps) {
 
     const {votingContract} = useContext(ChainVoteContext);
 
@@ -15,12 +18,19 @@ function ProposalRegistrationEnded() {
         })()
     }, [votingContract]);
 
+
     return (
         <>
             <CardGrid proposals={proposals}/>
-            <p>Administrator hasn't started voting session yet</p>
+            {period === "proposal"
+                ?
+                <p>Administrator hasn't started voting session yet</p>
+                :
+                <p>Administrator hasn't tallied votes yet</p>
+            }
+
         </>
     )
 }
 
-export default ProposalRegistrationEnded;
+export default PeriodEnded;

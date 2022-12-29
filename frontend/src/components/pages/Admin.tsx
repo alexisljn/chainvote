@@ -63,7 +63,14 @@ function Admin() {
             return (
                 <div>
                     <h1 className="top-grid-area-element">Voting administration</h1>
-                    <AdminProposalsRegistration/>
+                    <AdminProposalsRegistration type="start"/>
+                </div>
+            )
+        case VotingStatus.ProposalsRegistrationEnded:
+            return (
+                <div>
+                    <h1 className="top-grid-area-element">Voting administration</h1>
+                    <AdminProposalsRegistration type="end"/>
                 </div>
             )
     }

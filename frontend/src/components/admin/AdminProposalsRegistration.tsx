@@ -1,11 +1,14 @@
 import CardGrid from "../common/CardGrid";
 import {useCallback, useContext, useEffect, useState} from "react";
 import {ChainVoteContext} from "../../App";
-import {endProposalsRegistration, getProposals, Proposal} from "../../utils/VotingUtils";
+import {endProposalsRegistration, getProposals, Proposal, startVotingSession} from "../../utils/VotingUtils";
 import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
 import {fireToast, getErrorMessage} from "../../utils/Utils";
 
-function AdminProposalsRegistration() {
+interface AdminProposalsRegistrationProps {
+    type: 'start' | 'end';
+}
+function AdminProposalsRegistration({type}: AdminProposalsRegistrationProps) {
 
     const {provider, votingContract, address, modal} = useContext(ChainVoteContext);
 
@@ -27,9 +30,19 @@ function AdminProposalsRegistration() {
         }
     }, [votingContract, address]);
 
-    const onEndProposalsRegistration = useCallback(async () => {
+    const onEndProposalsRegistrationClick = useCallback(async () => {
         try {
             await endProposalsRegistration(provider!, votingContract!);
+
+            modal.show();
+        } catch (e) {
+            fireToast('error', getErrorMessage(e));
+        }
+    }, [provider, votingContract]);
+
+    const onStartVotingSessionClick = useCallback(async () => {
+        try {
+            await startVotingSession(provider!, votingContract!);
 
             modal.show();
         } catch (e) {
@@ -57,9 +70,16 @@ function AdminProposalsRegistration() {
                 <div className="admin-status-step">
                     <div className="step-index primary">1</div>
                     <div>
-                        <button className="btn primary" onClick={onEndProposalsRegistration}>
-                            End proposal registration
-                        </button>
+                        {type === 'start'
+                            ?
+                                <button className="btn primary" onClick={onEndProposalsRegistrationClick}>
+                                    End proposal registration
+                                </button>
+                            :
+                                <button className="btn primary" onClick={onStartVotingSessionClick}>
+                                    Start voting session
+                                </button>
+                        }
                     </div>
                 </div>
             </div>

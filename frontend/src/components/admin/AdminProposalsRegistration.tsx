@@ -28,7 +28,7 @@ function AdminProposalsRegistration({type}: AdminProposalsRegistrationProps) {
                 }
                 break;
         }
-    }, [votingContract, address]);
+    }, [votingContract, address, modal]);
 
     const onEndProposalsRegistrationClick = useCallback(async () => {
         try {
@@ -38,7 +38,7 @@ function AdminProposalsRegistration({type}: AdminProposalsRegistrationProps) {
         } catch (e) {
             fireToast('error', getErrorMessage(e));
         }
-    }, [provider, votingContract]);
+    }, [provider, votingContract, modal]);
 
     const onStartVotingSessionClick = useCallback(async () => {
         try {
@@ -48,7 +48,7 @@ function AdminProposalsRegistration({type}: AdminProposalsRegistrationProps) {
         } catch (e) {
             fireToast('error', getErrorMessage(e));
         }
-    }, [provider, votingContract]);
+    }, [provider, votingContract, modal]);
 
     useEffect(() => {
         window.addEventListener(CONTRACT_EVENT, handleLocallyContractEvent);

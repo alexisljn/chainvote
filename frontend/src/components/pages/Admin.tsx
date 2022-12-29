@@ -4,6 +4,7 @@ import AdminVotersRegistration from "../admin/AdminVotersRegistration";
 import {VotingStatus} from "../../utils/VotingUtils";
 import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
 import AdminProposalsRegistration from "../admin/AdminProposalsRegistration";
+import AdminVotingSession from "../admin/AdminVotingSession";
 
 function Admin() {
 
@@ -71,6 +72,13 @@ function Admin() {
                 <div>
                     <h1 className="top-grid-area-element">Voting administration</h1>
                     <AdminProposalsRegistration type="end"/>
+                </div>
+            )
+        case VotingStatus.VotingSessionStarted:
+            return(
+                <div>
+                    <h1 className="top-grid-area-element">Voting administration</h1>
+                    <AdminVotingSession/>
                 </div>
             )
     }

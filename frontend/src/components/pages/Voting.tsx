@@ -1,7 +1,8 @@
-import {useContext, useEffect, useState} from "react";
+import {useCallback, useContext, useEffect, useState} from "react";
 import {ChainVoteContext} from "../../App";
 import {VotingStatus} from "../../utils/VotingUtils";
 import ProposalRegistration from "../voting/ProposalRegistration";
+import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
 
 function Voting() {
 
@@ -9,16 +10,29 @@ function Voting() {
 
     const [votingStatus, setVotingStatus] = useState<number | null>(null);
 
+    const handleLocallyContractEvents = useCallback(async (e: any) => {
+        switch (e.detail.type) {
+            case 'workflowStatusChange':
+                setVotingStatus(await votingContract!.getStatus());
+                break;
+        }
+    }, [votingContract]);
+
     useEffect(() => {
         if (!votingContract) return
 
+        window.addEventListener(CONTRACT_EVENT, handleLocallyContractEvents);
+
         (async () => {
             setVotingStatus(await votingContract!.getStatus());
-        })()
+        })();
 
-    }, [votingContract])
+        return () => {
+            window.removeEventListener(CONTRACT_EVENT, handleLocallyContractEvents)
+        }
+    }, [votingContract, handleLocallyContractEvents]);
 
-    if (!votingContract || !votingStatus) {
+    if (!votingContract || votingStatus === null) {
         return (
             <div>
                 <h1 className="top-grid-area-element">Voting</h1>
@@ -28,6 +42,13 @@ function Voting() {
     }
 
     switch (votingStatus) {
+        case VotingStatus.RegisteringVoters:
+            return (
+                <div>
+                    <h1 className="top-grid-area-element">Voting</h1>
+                    <p>Administrator is registering voters</p>
+                </div>
+            )
         case VotingStatus.ProposalsRegistrationStarted:
             return (
                 <div>

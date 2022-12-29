@@ -12,11 +12,11 @@ import {
     PROVIDER_EVENT
 } from "./events-manager/ProviderEventsManager";
 import {getSupportedChainLabel, getConnectedAccounts, isChainIdSupported} from "./utils/ProviderUtils";
-import {canRegisterItself, canVote, getVotingContractInstance, isOwner} from "./utils/VotingUtils";
+import {ContractPermissions, getContractPermissions, getVotingContractInstance,} from "./utils/VotingUtils";
 import VotingStatuses from "./components/sidebar/VotingStatuses";
 import {formatAddressWithChecksum} from "./utils/Utils";
 import Modal from "./components/common/Modal";
-import {cleanContractEvents, listenContractEvents} from "./events-manager/VotingEventsManager";
+import {cleanContractEvents, CONTRACT_EVENT, listenContractEvents} from "./events-manager/VotingEventsManager";
 
 interface ChainVoteContextInterface {
     provider: providers.Web3Provider | undefined | null;
@@ -24,7 +24,7 @@ interface ChainVoteContextInterface {
     address: string | null;
     chainId: number | null;
     changeAddress: (address: string | null) => void;
-    permissions: {isOwner: boolean, canVote: boolean, canRegisterItself: boolean};
+    permissions: ContractPermissions
     modal: {show: () => void, hide: () => void};
 }
 
@@ -36,6 +36,7 @@ const ChainVoteContext = createContext<ChainVoteContextInterface>({
     changeAddress: () => {},
     permissions: {
         isOwner: false,
+        canAddProposal: false,
         canVote: false,
         canRegisterItself: false,
     },
@@ -51,8 +52,9 @@ function App() {
 
     const [votingContract, setVotingContract] = useState<Contract | null>(null);
 
-    const [permissions, setPermissions] = useState({
+    const [permissions, setPermissions] = useState<ContractPermissions>({
         isOwner: false,
+        canAddProposal: false,
         canVote: false,
         canRegisterItself: false,
     });
@@ -77,6 +79,14 @@ function App() {
                 break;
         }
     }, []);
+
+    const handleLocallyContractEvents = useCallback(async (e: any) => {
+        switch (e.detail.type) {
+            case 'workflowStatusChanged':
+                setPermissions(await getContractPermissions(votingContract!, address!));
+                break;
+        }
+    }, [votingContract, address]);
 
     const changeAddress = useCallback((address: string | null) => {
         setAddress(address);
@@ -129,19 +139,18 @@ function App() {
 
         listenContractEvents(votingContract);
 
-        (async () => {
-            const isUserOwner = await isOwner(votingContract, address);
-            const canUserVote = await canVote(votingContract);
-            const canUserRegisterItself = await canRegisterItself(votingContract);
+        window.addEventListener(CONTRACT_EVENT, handleLocallyContractEvents);
 
-            setPermissions({isOwner: isUserOwner, canVote: canUserVote, canRegisterItself: canUserRegisterItself});
-        })()
+        (async () => {
+            setPermissions(await getContractPermissions(votingContract, address));
+        })();
 
         return () => {
             cleanContractEvents(votingContract);
-        }
-    }, [votingContract, address, chainId]);
 
+            window.removeEventListener(CONTRACT_EVENT, handleLocallyContractEvents);
+        }
+    }, [votingContract, address, chainId, handleLocallyContractEvents]);
 
     if (provider === undefined) {
         //TODO Style message

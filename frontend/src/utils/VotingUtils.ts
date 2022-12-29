@@ -16,8 +16,24 @@ export interface Proposal {
     voteCount: BigNumber
 }
 
+export interface ContractPermissions {
+    isOwner: boolean,
+    canAddProposal: boolean,
+    canVote: boolean,
+    canRegisterItself: boolean
+}
+
 function getVotingContractInstance(provider: providers.Web3Provider): Contract {
     return new ethers.Contract(process.env.REACT_APP_CONTRACT_ADDRESS!, VOTING_JSON.abi, provider);
+}
+
+async function getContractPermissions(votingContract: Contract, address: string): Promise<ContractPermissions> {
+    const isUserOwner = await isOwner(votingContract, address);
+    const canUserAddProposal = await canAddProposal(votingContract, address);
+    const canUserVote = await canVote(votingContract, address);
+    const canUserRegisterItself = await canRegisterItself(votingContract, address);
+
+    return {isOwner: isUserOwner, canAddProposal: canUserAddProposal, canVote: canUserVote, canRegisterItself: canUserRegisterItself};
 }
 
 async function isOwner(votingContract: Contract, address: string): Promise<boolean> {
@@ -26,12 +42,16 @@ async function isOwner(votingContract: Contract, address: string): Promise<boole
     return owner === address;
 }
 
-async function canVote(votingContract: Contract): Promise<boolean> {
-    return await votingContract.canVote();
+async function canVote(votingContract: Contract, address: string): Promise<boolean> {
+    return await votingContract.canVote(address);
 }
 
-async function canRegisterItself(votingContract: Contract): Promise<boolean> {
-    return await votingContract.canRegisterItself();
+async function canRegisterItself(votingContract: Contract, address: string): Promise<boolean> {
+    return await votingContract.canRegisterItself(address);
+}
+
+async function canAddProposal(votingContract: Contract, address: string): Promise<boolean> {
+    return await votingContract.canAddProposal(address);
 }
 
 async function registerVoter(provider: providers.Web3Provider, votingContract: Contract, address: string) {
@@ -91,6 +111,8 @@ export {
     isOwner,
     canVote,
     canRegisterItself,
+    canAddProposal,
+    getContractPermissions,
     registerVoter,
     startProposalsRegistration,
     addProposal,

@@ -78,6 +78,12 @@ async function getProposals(votingContract: Contract): Promise<Proposal[]> {
     return generateProposals(proposals);
 }
 
+async function endProposalsRegistration(provider: providers.Web3Provider, votingContract: Contract) {
+    const votingContractWithSigner = getVotingContractWithSigner(provider, votingContract);
+
+    await votingContractWithSigner.endProposalsRegistration();
+}
+
 function getVotingContractWithSigner(provider: providers.Web3Provider, votingContract: Contract): Contract {
     const signer = provider.getSigner();
 
@@ -117,5 +123,6 @@ export {
     startProposalsRegistration,
     addProposal,
     getProposals,
+    endProposalsRegistration,
     generateStatusesList,
 }

@@ -23,6 +23,8 @@ function AdminVotersRegistration() {
             await registerVoter(provider!, votingContract!, voterAddress);
 
             modal.show();
+
+            setVoterAddress('');
         } catch (e: any) {
             fireToast('error', getErrorMessage(e));
         }

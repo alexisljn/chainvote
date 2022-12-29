@@ -21,6 +21,8 @@ function ProposalRegistration() {
         await addProposal(provider!, votingContract!, submittedProposal);
 
         modal.show();
+
+        setSubmittedProposal('');
     }, [submittedProposal, provider, votingContract, modal]);
 
     const handleLocallyContractEvent = useCallback(async (e: any) => {

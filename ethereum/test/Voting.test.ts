@@ -765,13 +765,45 @@ describe("Voting smart contract test", () => {
     });
 
     describe("Helper functions", () => {
+        describe("canAddProposal", () => {
+            it("Should return true when registered address calls function", async () => {
+                const {voting, owner} = await loadFixture(deployVotingFixture);
+
+                await voting.registerVoter(owner.address);
+
+                await voting.startProposalsRegistration();
+
+                const canAddProposal = await voting.canAddProposal(owner.address);
+
+                expect(canAddProposal).true;
+            })
+
+            it("Should return false when non registered address calls function", async () => {
+                const {voting, owner} = await loadFixture(deployVotingFixture);
+
+                await voting.startProposalsRegistration();
+
+                const canAddProposal = await voting.canAddProposal(owner.address);
+
+                expect(canAddProposal).false;
+            })
+
+            it("Should return false when address calls function when not allowed", async () => {
+                const {voting, owner} = await loadFixture(deployVotingFixture);
+
+                const canAddProposal = await voting.canAddProposal(owner.address);
+
+                expect(canAddProposal).false;
+            })
+        })
+
         describe("canVote", () => {
             it("Should return true when registered address is allowed to vote", async () => {
-                const {voting} = await loadFixture(deployAndAddProposalsFixture);
+                const {voting, owner} = await loadFixture(deployAndAddProposalsFixture);
 
                 await voting.startVotingSession();
 
-                const canVote = await voting.canVote();
+                const canVote = await voting.canVote(owner.address);
 
                 expect(canVote).true;
             });
@@ -781,15 +813,15 @@ describe("Voting smart contract test", () => {
 
                 const votingOtherAccounts4 = voting.connect(otherAccounts[4]);
 
-                const canVote = await votingOtherAccounts4.canVote();
+                const canVote = await votingOtherAccounts4.canVote(otherAccounts[4].address);
 
                 expect(canVote).false;
             });
 
             it("Should return false when function called outside of voting session", async () => {
-                const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+                const {voting, owner} = await loadFixture(deployAndVoteToEqualityFixture);
 
-                const canVote = await voting.canVote();
+                const canVote = await voting.canVote(owner.address);
 
                 expect(canVote).false;
             })
@@ -797,9 +829,9 @@ describe("Voting smart contract test", () => {
 
         describe("canRegisterItself", () => {
             it("Should return true when registered address is allowed to register for new ballot", async () => {
-                const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+                const {voting, owner} = await loadFixture(deployAndVoteToEqualityFixture);
 
-                const canRegister = await voting.canRegisterItself();
+                const canRegister = await voting.canRegisterItself(owner.address);
 
                 expect(canRegister).true;
             });
@@ -809,15 +841,15 @@ describe("Voting smart contract test", () => {
 
                 const votingOtherAccounts5 = voting.connect(otherAccounts[5]);
 
-                const canRegister = await votingOtherAccounts5.canRegisterItself();
+                const canRegister = await votingOtherAccounts5.canRegisterItself(otherAccounts[5].address);
 
                 expect(canRegister).false;
             });
 
             it("Should return false when registering itself is not allowed", async () => {
-                const {voting} = await loadFixture(deployVotingFixture);
+                const {voting, owner} = await loadFixture(deployVotingFixture);
 
-                const canRegister = await voting.canRegisterItself();
+                const canRegister = await voting.canRegisterItself(owner.address);
 
                 expect(canRegister).false;
             });

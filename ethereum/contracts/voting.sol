@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-
+import "hardhat/console.sol";
 /*
 * @author alexisljn
 * @notice Simple voting smart contract for a small organization
@@ -345,25 +345,36 @@ contract Voting is Ownable {
     }
 
     /*
-    * @dev Helper function to make easier frontend logic
+    *   @dev Helper function make easier frontend logic
     */
-    function canVote() external view returns(bool) {
-        if (_voteStatus != WorkflowStatus.VotingSessionStarted) {
+    function canAddProposal(address voter) external view returns(bool) {
+        if (_voteStatus != WorkflowStatus.ProposalsRegistrationStarted) {
             return false;
         }
 
-        return _voters[msg.sender].isRegistered && _voters[msg.sender].lastVotingSession == _votingSession.current();
+        return _voters[voter].isRegistered && _voters[voter].lastVotingSession == _votingSession.current();
     }
 
     /*
     * @dev Helper function to make easier frontend logic
     */
-    function canRegisterItself() external view returns(bool) {
+    function canVote(address voter) external view returns(bool) {
+        if (_voteStatus != WorkflowStatus.VotingSessionStarted) {
+            return false;
+        }
+
+        return _voters[voter].isRegistered &&  _voters[voter].lastVotingSession == _votingSession.current();
+    }
+
+    /*
+    * @dev Helper function to make easier frontend logic
+    */
+    function canRegisterItself(address voter) external view returns(bool) {
         if (_voteStatus != WorkflowStatus.CountingEquality) {
             return false;
         }
 
-        return !_voters[msg.sender].isRegistered && _voters[msg.sender].lastVotingSession == _votingSession.current();
+        return ! _voters[voter].isRegistered &&  _voters[voter].lastVotingSession == _votingSession.current();
     }
 
     /*

@@ -4,6 +4,7 @@ import {VotingStatus} from "../../utils/VotingUtils";
 import ProposalRegistration from "../voting/ProposalRegistration";
 import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
 import ProposalRegistrationEnded from "../voting/ProposalRegistrationEnded";
+import VotingSession from "../voting/VotingSession";
 
 function Voting() {
 
@@ -62,6 +63,13 @@ function Voting() {
                 <div>
                     <h1 className="top-grid-area-element">Voting</h1>
                     <ProposalRegistrationEnded/>
+                </div>
+            )
+        case VotingStatus.VotingSessionStarted:
+            return (
+                <div>
+                    <h1 className="top-grid-area-element">Voting</h1>
+                    <VotingSession/>
                 </div>
             )
     }

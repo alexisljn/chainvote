@@ -82,7 +82,7 @@ function App() {
 
     const handleLocallyContractEvents = useCallback(async (e: any) => {
         switch (e.detail.type) {
-            case 'workflowStatusChanged':
+            case 'workflowStatusChange':
                 setPermissions(await getContractPermissions(votingContract!, address!));
                 break;
         }

@@ -9,6 +9,8 @@ function ProposalRegistration() {
 
     const {provider, votingContract, address, modal, permissions} = useContext(ChainVoteContext);
 
+    const {canAddProposal} = permissions;
+
     const [proposals, setProposals] = useState<any>([]);
 
     const [submittedProposal, setSubmittedProposal] = useState<string>('');
@@ -59,7 +61,7 @@ function ProposalRegistration() {
     return (
         <>
             <CardGrid proposals={proposals}/>
-            {permissions.canAddProposal &&
+            {canAddProposal &&
                 <div>
                     <h2>Add a proposal</h2>
                     <div>

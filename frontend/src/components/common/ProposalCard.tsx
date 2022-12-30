@@ -1,4 +1,4 @@
-import {useCallback, useContext, useEffect, useState} from "react";
+import {useCallback, useContext, useEffect, useMemo, useState} from "react";
 import {ChainVoteContext} from "../../App";
 import {Proposal, vote} from "../../utils/VotingUtils";
 import {useLocation} from "react-router-dom";
@@ -12,6 +12,8 @@ interface ProposalCardProps {
 function ProposalCard({proposal, index}: ProposalCardProps) {
 
     const {provider, votingContract, permissions, modal} = useContext(ChainVoteContext);
+
+    const {canVote} = permissions;
 
     const [isAdminPage, setIsAdminPage] = useState<boolean>(false);
 
@@ -28,10 +30,8 @@ function ProposalCard({proposal, index}: ProposalCardProps) {
     }, [provider, votingContract, modal]);
 
     useEffect(() => {
-        setIsAdminPage(location.pathname.includes('admin'))
+        setIsAdminPage(location.pathname.includes('admin'));
     }, [location]);
-
-    const {canVote} = permissions;
 
     return (
         <div className="card">

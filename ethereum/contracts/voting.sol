@@ -61,14 +61,6 @@ contract Voting is Ownable {
 
     event Voted(address voter, uint proposalId);
 
-    event NewBallotPrepared(address caller);
-
-    event VotingReset(address caller);
-
-    event WinningProposal(uint proposalId, address caller);
-
-    event Equality(address caller);
-
     modifier onlyVoter {
         require(_voters[msg.sender].isRegistered &&
             _voters[msg.sender].lastVotingSession == _votingSession.current(),
@@ -90,7 +82,9 @@ contract Voting is Ownable {
 
         require(_address != address(0), "0 address is invalid");
 
-        require(!_voters[_address].isRegistered, "Voter is already registered");
+        require(!_voters[_address].isRegistered || _voters[_address].lastVotingSession != _votingSession.current(),
+            "Voter is already registered"
+        );
 
         _voters[_address].isRegistered = true;
 
@@ -252,7 +246,7 @@ contract Voting is Ownable {
         if (_tiedProposals.length > 0 ) {
             _voteStatus = WorkflowStatus.CountingEquality;
 
-            emit Equality(msg.sender);
+            emit WorkflowStatusChange(WorkflowStatus.VotingSessionEnded, WorkflowStatus.CountingEquality, msg.sender);
         } else {
             _voteStatus = WorkflowStatus.VotesTallied;
 
@@ -260,7 +254,7 @@ contract Voting is Ownable {
 
             _votingSession.increment();
 
-            emit WinningProposal(_winningProposalId, msg.sender);
+            emit WorkflowStatusChange(WorkflowStatus.VotingSessionEnded, WorkflowStatus.VotesTallied, msg.sender);
         }
     }
 
@@ -280,7 +274,7 @@ contract Voting is Ownable {
 
         _voteStatus = WorkflowStatus.VotingSessionStarted;
 
-        emit NewBallotPrepared(msg.sender);
+        emit WorkflowStatusChange(WorkflowStatus.CountingEquality, WorkflowStatus.VotingSessionStarted, msg.sender);
     }
 
     /**
@@ -312,9 +306,11 @@ contract Voting is Ownable {
 
         _winningProposalId = randomIndex;
 
+        winningProposalHistory.push(proposals[_winningProposalId]);
+
         _voteStatus = WorkflowStatus.VotesTallied;
 
-        emit WinningProposal(_winningProposalId, msg.sender);
+        emit WorkflowStatusChange(WorkflowStatus.CountingEquality, WorkflowStatus.VotesTallied, msg.sender);
     }
 
 
@@ -326,15 +322,14 @@ contract Voting is Ownable {
     }
 
     /*
-    * @notice Allows administrator to reset all properties of contract in order to have clean state for next votings
+    * @notice Allows administrator to reset all properties of contract in order to have clean state for next voting
     */
     function resetVoting() external onlyOwner {
-        require(_voteStatus == WorkflowStatus.VotesTallied ||
-            (_voteStatus == WorkflowStatus.VotingSessionEnded && proposals[_winningProposalId].voteCount == 0),
-            "Resetting voting is allowed only when votes have been counted"
+        require(_voteStatus == WorkflowStatus.VotesTallied || // Voting finished
+            (_voteStatus == WorkflowStatus.VotingSessionEnded && proposals.length == 0) || // Stuck, no proposal
+            (_voteStatus == WorkflowStatus.VotingSessionEnded && proposals[_winningProposalId].voteCount == 0), // Stuck, no vote
+            "Resetting voting is not allowed"
         );
-
-        winningProposalHistory.push(proposals[_winningProposalId]);
 
         delete _winningProposalId;
 
@@ -342,7 +337,11 @@ contract Voting is Ownable {
 
         _votingSession.increment();
 
-        emit VotingReset(msg.sender);
+        WorkflowStatus previousStatus = _voteStatus;
+
+        _voteStatus = WorkflowStatus.RegisteringVoters;
+
+        emit WorkflowStatusChange(previousStatus, _voteStatus, msg.sender);
     }
 
     /*

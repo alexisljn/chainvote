@@ -453,8 +453,8 @@ describe("Voting smart contract test", () => {
 
                 await expect(voting.pickWinner())
                     .to
-                    .emit(voting, "WinningProposal")
-                    .withArgs(proposalIds[1], owner.address)
+                    .emit(voting, "WorkflowStatusChange")
+                    .withArgs(4, 6, owner.address)
                 ;
             });
 
@@ -477,8 +477,8 @@ describe("Voting smart contract test", () => {
 
                 await expect(voting.pickWinner())
                     .to
-                    .emit(voting, "WinningProposal")
-                    .withArgs(proposalIds[1], owner.address)
+                    .emit(voting, "WorkflowStatusChange")
+                    .withArgs(4, 6, owner.address)
                 ;
             });
 
@@ -497,8 +497,8 @@ describe("Voting smart contract test", () => {
 
                 await expect(voting.pickWinner())
                     .to
-                    .emit(voting, "Equality")
-                    .withArgs(owner.address)
+                    .emit(voting, "WorkflowStatusChange")
+                    .withArgs(4, 5, owner.address)
                 ;
             });
 
@@ -521,8 +521,8 @@ describe("Voting smart contract test", () => {
 
                 await expect(voting.pickWinner())
                     .to
-                    .emit(voting, "Equality")
-                    .withArgs(owner.address)
+                    .emit(voting, "WorkflowStatusChange")
+                    .withArgs(4, 5, owner.address)
                 ;
             });
 
@@ -585,8 +585,8 @@ describe("Voting smart contract test", () => {
 
                 await expect(voting.prepareNewBallot())
                     .to
-                    .emit(voting, "NewBallotPrepared")
-                    .withArgs(owner.address)
+                    .emit(voting, "WorkflowStatusChange")
+                    .withArgs(5, 3, owner.address)
                 ;
             });
 
@@ -679,8 +679,8 @@ describe("Voting smart contract test", () => {
 
                 await expect(voting.pickWinnerRandomly())
                     .to
-                    .emit(voting, "WinningProposal")
-                    .withArgs(anyUint, owner.address)
+                    .emit(voting, "WorkflowStatusChange")
+                    .withArgs(5, 6, owner.address)
                 ;
             });
 
@@ -714,8 +714,8 @@ describe("Voting smart contract test", () => {
 
             await expect(voting.resetVoting())
                 .to
-                .emit(voting, "VotingReset")
-                .withArgs(owner.address)
+                .emit(voting, "WorkflowStatusChange")
+                .withArgs(6, 0, owner.address)
             ;
         });
 
@@ -728,8 +728,26 @@ describe("Voting smart contract test", () => {
 
             await expect(voting.resetVoting())
                 .to
-                .emit(voting, "VotingReset")
-                .withArgs(owner.address)
+                .emit(voting, "WorkflowStatusChange")
+                .withArgs(4, 0, owner.address)
+            ;
+        });
+
+        it("Should emit event when reset voting successfully processed with no proposal submitted for voting", async () => {
+            const {voting, owner} = await loadFixture(deployVotingFixture);
+
+            await voting.startProposalsRegistration();
+
+            await voting.endProposalsRegistration();
+
+            await voting.startVotingSession();
+
+            await voting.endVotingSession();
+
+            await expect(voting.resetVoting())
+                .to
+                .emit(voting, "WorkflowStatusChange")
+                .withArgs(4, 0, owner.address)
             ;
         });
 
@@ -749,7 +767,21 @@ describe("Voting smart contract test", () => {
             await expect(voting.resetVoting())
                 .to
                 .be
-                .revertedWith("Resetting voting is allowed only when votes have been counted")
+                .revertedWith("Resetting voting is not allowed")
+            ;
+        });
+
+        it("Should emit event when registered voter for previous voting, is registered again", async () => {
+            const {voting, owner} = await loadFixture(deployAndVoteToEqualityFixture);
+
+            await voting.pickWinnerRandomly();
+
+            await voting.resetVoting();
+
+            await expect(voting.registerVoter(owner.address))
+                .to
+                .emit(voting, "VoterRegistered")
+                .withArgs(owner.address, owner.address)
             ;
         });
     });

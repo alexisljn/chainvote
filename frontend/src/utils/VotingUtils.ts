@@ -133,6 +133,18 @@ async function tallyVotes(provider: providers.Web3Provider, votingContract: Cont
     await votingContractWithSigner.pickWinner();
 }
 
+async function prepareNewBallot(provider: providers.Web3Provider, votingContract: Contract) {
+    const votingContractWithSigner = getVotingContractWithSigner(provider, votingContract);
+
+    await votingContractWithSigner.prepareNewBallot();
+}
+
+async function registerItself(provider: providers.Web3Provider, votingContract: Contract) {
+    const votingContractWithSigner = getVotingContractWithSigner(provider, votingContract);
+
+    await votingContractWithSigner.enableVoteForNewBallot();
+}
+
 function generateProposals(proposals: any[]): Proposal[] {
     return proposals.map(proposal => ({description: proposal.description, voteCount: proposal.voteCount}));
 }
@@ -154,5 +166,7 @@ export {
     endVotingSession,
     getWinningProposal,
     resetVoting,
+    prepareNewBallot,
+    registerItself,
     tallyVotes,
 }

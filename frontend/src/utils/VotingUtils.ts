@@ -127,6 +127,10 @@ async function resetVoting(provider: providers.Web3Provider, votingContract: Con
     await votingContractWithSigner.resetVoting();
 }
 
+async function tallyVotes(provider: providers.Web3Provider, votingContract: Contract) {
+    const votingContractWithSigner = getVotingContractWithSigner(provider, votingContract);
+
+    await votingContractWithSigner.pickWinner();
 }
 
 function generateProposals(proposals: any[]): Proposal[] {
@@ -150,4 +154,5 @@ export {
     endVotingSession,
     getWinningProposal,
     resetVoting,
+    tallyVotes,
 }

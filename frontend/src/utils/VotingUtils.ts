@@ -121,6 +121,12 @@ async function getWinningProposal(votingContract: Contract): Promise<Proposal | 
     }
 }
 
+async function resetVoting(provider: providers.Web3Provider, votingContract: Contract) {
+    const votingContractWithSigner = getVotingContractWithSigner(provider, votingContract);
+
+    await votingContractWithSigner.resetVoting();
+}
+
 }
 
 function generateProposals(proposals: any[]): Proposal[] {
@@ -143,4 +149,5 @@ export {
     vote,
     endVotingSession,
     getWinningProposal,
+    resetVoting,
 }

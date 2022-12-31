@@ -108,22 +108,8 @@ function getVotingContractWithSigner(provider: providers.Web3Provider, votingCon
     return votingContract.connect(signer);
 }
 
-function generateStatusesList(currentStatus: number): string[] {
-    const statusLabels = [
-        "Voters registration",
-        "Proposals registration",
-        "Proposals registration ended",
-        "Voting session",
-        "Voting session ended",
-        "Equality",
-        "Votes tallied"
-    ];
-
-    if (currentStatus !== 5) {
-        statusLabels.splice(5, 1);
     }
 
-    return statusLabels;
 }
 
 function generateProposals(proposals: any[]): Proposal[] {
@@ -145,5 +131,4 @@ export {
     startVotingSession,
     vote,
     endVotingSession,
-    generateStatusesList,
 }

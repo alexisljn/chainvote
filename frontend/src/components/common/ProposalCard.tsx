@@ -1,4 +1,4 @@
-import {useCallback, useContext, useEffect, useMemo, useState} from "react";
+import {useCallback, useContext, useEffect, useState} from "react";
 import {ChainVoteContext} from "../../App";
 import {Proposal, vote} from "../../utils/VotingUtils";
 import {useLocation} from "react-router-dom";
@@ -27,7 +27,7 @@ function ProposalCard({proposal, index}: ProposalCardProps) {
         } catch (e) {
             fireToast('error', getErrorMessage(e));
         }
-    }, [provider, votingContract, modal]);
+    }, [provider, votingContract, modal, index]);
 
     useEffect(() => {
         setIsAdminPage(location.pathname.includes('admin'));

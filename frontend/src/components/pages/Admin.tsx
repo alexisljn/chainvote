@@ -6,6 +6,7 @@ import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
 import AdminProposalsRegistration from "../admin/AdminProposalsRegistration";
 import AdminVotingSession from "../admin/AdminVotingSession";
 import AdminVotingSessionEnded from "../admin/AdminVotingSessionEnded";
+import AdminEquality from "../admin/AdminEquality";
 
 function Admin() {
 
@@ -76,17 +77,24 @@ function Admin() {
                 </div>
             )
         case VotingStatus.VotingSessionStarted:
-            return(
+            return (
                 <div>
                     <h1 className="top-grid-area-element">Voting administration</h1>
                     <AdminVotingSession/>
                 </div>
             )
         case VotingStatus.VotingSessionEnded:
-            return(
+            return (
                 <div>
                     <h1 className="top-grid-area-element">Voting administration</h1>
                     <AdminVotingSessionEnded/>
+                </div>
+            )
+        case VotingStatus.CountingEquality:
+            return (
+                <div>
+                    <h1 className="top-grid-area-element">Voting administration</h1>
+                    <AdminEquality/>
                 </div>
             )
     }

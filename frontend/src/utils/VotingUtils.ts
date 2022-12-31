@@ -108,7 +108,18 @@ function getVotingContractWithSigner(provider: providers.Web3Provider, votingCon
     return votingContract.connect(signer);
 }
 
+async function getWinningProposal(votingContract: Contract): Promise<Proposal | null> {
+
+    const winningId: number = await votingContract.getWinningProposalId();
+
+    try {
+        const winningProposal = await votingContract.proposals(winningId)
+
+        return generateProposals([winningProposal])[0];
+    } catch (e) {
+        return null;
     }
+}
 
 }
 
@@ -131,4 +142,5 @@ export {
     startVotingSession,
     vote,
     endVotingSession,
+    getWinningProposal,
 }

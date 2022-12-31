@@ -306,9 +306,11 @@ contract Voting is Ownable {
 
         _winningProposalId = randomIndex;
 
-        winningProposalHistory.push(proposals[_winningProposalId]);
+        winningProposalHistory.push(_tiedProposals[_winningProposalId]);
 
         _voteStatus = WorkflowStatus.VotesTallied;
+
+        delete _tiedProposals;
 
         emit WorkflowStatusChange(WorkflowStatus.CountingEquality, WorkflowStatus.VotesTallied, msg.sender);
     }

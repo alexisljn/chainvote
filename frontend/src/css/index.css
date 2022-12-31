@@ -183,6 +183,10 @@ textarea {
     border-radius: 6px;
 }
 
+.step-index span {
+    font-size: 22px;
+}
+
 .register-voter {
     display: flex;
     align-items: center;
@@ -324,4 +328,8 @@ textarea {
 
 .proposal-textarea {
     outline: none;
+}
+
+.register-itself {
+  margin-top: 30px;
 }

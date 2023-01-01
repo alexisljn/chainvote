@@ -1,7 +1,6 @@
 import {ethers} from "hardhat";
 import {Voting} from "../typechain-types";
-import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
-import {anyUint} from "@nomicfoundation/hardhat-chai-matchers/withArgs";
+import {loadFixture, mine} from "@nomicfoundation/hardhat-network-helpers";
 import {expect} from "chai";
 
 enum WorkflowStatus {
@@ -453,8 +452,8 @@ describe("Voting smart contract test", () => {
 
                 await expect(voting.pickWinner())
                     .to
-                    .emit(voting, "WinningProposal")
-                    .withArgs(proposalIds[1], owner.address)
+                    .emit(voting, "WorkflowStatusChange")
+                    .withArgs(4, 6, owner.address)
                 ;
             });
 
@@ -477,9 +476,25 @@ describe("Voting smart contract test", () => {
 
                 await expect(voting.pickWinner())
                     .to
-                    .emit(voting, "WinningProposal")
-                    .withArgs(proposalIds[1], owner.address)
+                    .emit(voting, "WorkflowStatusChange")
+                    .withArgs(4, 6, owner.address)
                 ;
+            });
+
+            it("Should update correctly winning proposal history after counting", async () => {
+                const {voting, owner, proposalIds} = await loadFixture(deployAndAddProposalsFixture);
+
+                await voting.startVotingSession();
+
+                await voting.vote(proposalIds[1]);
+
+                await voting.endVotingSession();
+
+                await voting.pickWinner();
+
+                const winningProposalLength = await voting.getWinningProposalHistoryCount();
+
+                expect(winningProposalLength).to.equal(1);
             });
 
             it("Should emit event when equality at votes counting", async () => {
@@ -497,8 +512,8 @@ describe("Voting smart contract test", () => {
 
                 await expect(voting.pickWinner())
                     .to
-                    .emit(voting, "Equality")
-                    .withArgs(owner.address)
+                    .emit(voting, "WorkflowStatusChange")
+                    .withArgs(4, 5, owner.address)
                 ;
             });
 
@@ -521,8 +536,8 @@ describe("Voting smart contract test", () => {
 
                 await expect(voting.pickWinner())
                     .to
-                    .emit(voting, "Equality")
-                    .withArgs(owner.address)
+                    .emit(voting, "WorkflowStatusChange")
+                    .withArgs(4, 5, owner.address)
                 ;
             });
 
@@ -585,8 +600,8 @@ describe("Voting smart contract test", () => {
 
                 await expect(voting.prepareNewBallot())
                     .to
-                    .emit(voting, "NewBallotPrepared")
-                    .withArgs(owner.address)
+                    .emit(voting, "WorkflowStatusChange")
+                    .withArgs(5, 3, owner.address)
                 ;
             });
 
@@ -679,13 +694,15 @@ describe("Voting smart contract test", () => {
 
                 await expect(voting.pickWinnerRandomly())
                     .to
-                    .emit(voting, "WinningProposal")
-                    .withArgs(anyUint, owner.address)
+                    .emit(voting, "WorkflowStatusChange")
+                    .withArgs(5, 6, owner.address)
                 ;
             });
 
             it("Should check that winning proposal id picked randomly is correct", async () => {
                 const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                await mine(25);
 
                 await voting.pickWinnerRandomly();
 
@@ -714,8 +731,40 @@ describe("Voting smart contract test", () => {
 
             await expect(voting.resetVoting())
                 .to
-                .emit(voting, "VotingReset")
-                .withArgs(owner.address)
+                .emit(voting, "WorkflowStatusChange")
+                .withArgs(6, 0, owner.address)
+            ;
+        });
+
+        it("Should emit event when reset voting successfully processed with no votes for no proposal", async () => {
+            const {voting, owner} = await loadFixture(deployAndAddProposalsFixture);
+
+            await voting.startVotingSession();
+
+            await voting.endVotingSession();
+
+            await expect(voting.resetVoting())
+                .to
+                .emit(voting, "WorkflowStatusChange")
+                .withArgs(4, 0, owner.address)
+            ;
+        });
+
+        it("Should emit event when reset voting successfully processed with no proposal submitted for voting", async () => {
+            const {voting, owner} = await loadFixture(deployVotingFixture);
+
+            await voting.startProposalsRegistration();
+
+            await voting.endProposalsRegistration();
+
+            await voting.startVotingSession();
+
+            await voting.endVotingSession();
+
+            await expect(voting.resetVoting())
+                .to
+                .emit(voting, "WorkflowStatusChange")
+                .withArgs(4, 0, owner.address)
             ;
         });
 
@@ -735,41 +784,65 @@ describe("Voting smart contract test", () => {
             await expect(voting.resetVoting())
                 .to
                 .be
-                .revertedWith("Resetting voting is allowed only when votes have been counted")
+                .revertedWith("Resetting voting is not allowed")
             ;
         });
-    });
 
-    describe('Workflow status change (only RegisteringVoters)', () => {
-        it("Should emit event when owner starts voters registration", async () => {
+        it("Should emit event when registered voter for previous voting, is registered again", async () => {
             const {voting, owner} = await loadFixture(deployAndVoteToEqualityFixture);
 
             await voting.pickWinnerRandomly();
 
-            await expect(voting.registeringVoters())
-                .to
-                .emit(voting, "WorkflowStatusChange")
-                .withArgs(WorkflowStatus.VotesTallied, WorkflowStatus.RegisteringVoters, owner.address)
-            ;
-        });
+            await voting.resetVoting();
 
-        it("Should revert if owner starts voters registration when not allowed", async () => {
-            const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
-
-            await expect(voting.registeringVoters())
+            await expect(voting.registerVoter(owner.address))
                 .to
-                .be
-                .revertedWith("Current voting is not finished")
+                .emit(voting, "VoterRegistered")
+                .withArgs(owner.address, owner.address)
             ;
         });
     });
 
     describe("Helper functions", () => {
+        describe("canAddProposal", () => {
+            it("Should return true when registered address calls function", async () => {
+                const {voting, owner} = await loadFixture(deployVotingFixture);
+
+                await voting.registerVoter(owner.address);
+
+                await voting.startProposalsRegistration();
+
+                const canAddProposal = await voting.canAddProposal(owner.address);
+
+                expect(canAddProposal).true;
+            })
+
+            it("Should return false when non registered address calls function", async () => {
+                const {voting, owner} = await loadFixture(deployVotingFixture);
+
+                await voting.startProposalsRegistration();
+
+                const canAddProposal = await voting.canAddProposal(owner.address);
+
+                expect(canAddProposal).false;
+            })
+
+            it("Should return false when address calls function when not allowed", async () => {
+                const {voting, owner} = await loadFixture(deployVotingFixture);
+
+                const canAddProposal = await voting.canAddProposal(owner.address);
+
+                expect(canAddProposal).false;
+            })
+        })
+
         describe("canVote", () => {
             it("Should return true when registered address is allowed to vote", async () => {
-                const {voting} = await loadFixture(deployAndAddProposalsFixture);
+                const {voting, owner} = await loadFixture(deployAndAddProposalsFixture);
 
-                const canVote = await voting.canVote();
+                await voting.startVotingSession();
+
+                const canVote = await voting.canVote(owner.address);
 
                 expect(canVote).true;
             });
@@ -779,17 +852,25 @@ describe("Voting smart contract test", () => {
 
                 const votingOtherAccounts4 = voting.connect(otherAccounts[4]);
 
-                const canVote = await votingOtherAccounts4.canVote();
+                const canVote = await votingOtherAccounts4.canVote(otherAccounts[4].address);
 
                 expect(canVote).false;
             });
+
+            it("Should return false when function called outside of voting session", async () => {
+                const {voting, owner} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                const canVote = await voting.canVote(owner.address);
+
+                expect(canVote).false;
+            })
         });
 
         describe("canRegisterItself", () => {
             it("Should return true when registered address is allowed to register for new ballot", async () => {
-                const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+                const {voting, owner} = await loadFixture(deployAndVoteToEqualityFixture);
 
-                const canRegister = await voting.canRegisterItself();
+                const canRegister = await voting.canRegisterItself(owner.address);
 
                 expect(canRegister).true;
             });
@@ -799,15 +880,15 @@ describe("Voting smart contract test", () => {
 
                 const votingOtherAccounts5 = voting.connect(otherAccounts[5]);
 
-                const canRegister = await votingOtherAccounts5.canRegisterItself();
+                const canRegister = await votingOtherAccounts5.canRegisterItself(otherAccounts[5].address);
 
                 expect(canRegister).false;
             });
 
             it("Should return false when registering itself is not allowed", async () => {
-                const {voting} = await loadFixture(deployVotingFixture);
+                const {voting, owner} = await loadFixture(deployVotingFixture);
 
-                const canRegister = await voting.canRegisterItself();
+                const canRegister = await voting.canRegisterItself(owner.address);
 
                 expect(canRegister).false;
             });

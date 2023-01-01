@@ -4,7 +4,7 @@ pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-
+import "hardhat/console.sol";
 /*
 * @author alexisljn
 * @notice Simple voting smart contract for a small organization
@@ -61,14 +61,6 @@ contract Voting is Ownable {
 
     event Voted(address voter, uint proposalId);
 
-    event NewBallotPrepared(address caller);
-
-    event VotingReset(address caller);
-
-    event WinningProposal(uint proposalId, address caller);
-
-    event Equality(address caller);
-
     modifier onlyVoter {
         require(_voters[msg.sender].isRegistered &&
             _voters[msg.sender].lastVotingSession == _votingSession.current(),
@@ -90,26 +82,15 @@ contract Voting is Ownable {
 
         require(_address != address(0), "0 address is invalid");
 
-        require(!_voters[_address].isRegistered, "Voter is already registered");
+        require(!_voters[_address].isRegistered || _voters[_address].lastVotingSession != _votingSession.current(),
+            "Voter is already registered"
+        );
 
         _voters[_address].isRegistered = true;
 
         _voters[_address].lastVotingSession = _votingSession.current();
 
         emit VoterRegistered(_address, msg.sender);
-    }
-
-    /**
-    * @notice Allow administrator to start the registration of voters
-    */
-    function registeringVoters() external onlyOwner {
-        require(_voteStatus == WorkflowStatus.VotesTallied, "Current voting is not finished");
-
-        WorkflowStatus previousStatus = _voteStatus;
-
-        _voteStatus = WorkflowStatus.RegisteringVoters;
-
-        emit WorkflowStatusChange(previousStatus, _voteStatus, msg.sender);
     }
 
     /**
@@ -252,7 +233,7 @@ contract Voting is Ownable {
         if (_tiedProposals.length > 0 ) {
             _voteStatus = WorkflowStatus.CountingEquality;
 
-            emit Equality(msg.sender);
+            emit WorkflowStatusChange(WorkflowStatus.VotingSessionEnded, WorkflowStatus.CountingEquality, msg.sender);
         } else {
             _voteStatus = WorkflowStatus.VotesTallied;
 
@@ -260,7 +241,7 @@ contract Voting is Ownable {
 
             _votingSession.increment();
 
-            emit WinningProposal(_winningProposalId, msg.sender);
+            emit WorkflowStatusChange(WorkflowStatus.VotingSessionEnded, WorkflowStatus.VotesTallied, msg.sender);
         }
     }
 
@@ -280,7 +261,7 @@ contract Voting is Ownable {
 
         _voteStatus = WorkflowStatus.VotingSessionStarted;
 
-        emit NewBallotPrepared(msg.sender);
+        emit WorkflowStatusChange(WorkflowStatus.CountingEquality, WorkflowStatus.VotingSessionStarted, msg.sender);
     }
 
     /**
@@ -308,32 +289,35 @@ contract Voting is Ownable {
 
         assert(_tiedProposals.length > 0);
 
-        uint8 randomIndex = uint8(uint(keccak256(abi.encodePacked(block.timestamp, block.number, block.basefee))) % _tiedProposals.length);
+        uint8 randomIndex = uint8(uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp, block.number, block.basefee))) % _tiedProposals.length);
 
         _winningProposalId = randomIndex;
 
+        winningProposalHistory.push(_tiedProposals[_winningProposalId]);
+
         _voteStatus = WorkflowStatus.VotesTallied;
 
-        emit WinningProposal(_winningProposalId, msg.sender);
+        delete _tiedProposals;
+
+        emit WorkflowStatusChange(WorkflowStatus.CountingEquality, WorkflowStatus.VotesTallied, msg.sender);
     }
 
-
     /*
-    * @notice Allows everybody to consult the winning proposal at the end of a voting
+    * @notice Allows everybody to consult the winning proposal
     */
     function getWinningProposalId() external view returns(uint8) {
-        require(_voteStatus == WorkflowStatus.VotesTallied, "Voting is not over or has not began");
-
         return _winningProposalId;
     }
 
     /*
-    * @notice Allows administrator to reset all properties of contract in order to have clean state for next votings
+    * @notice Allows administrator to reset all properties of contract in order to have clean state for next voting
     */
     function resetVoting() external onlyOwner {
-        require(_voteStatus == WorkflowStatus.VotesTallied, "Resetting voting is allowed only when votes have been counted");
-
-        winningProposalHistory.push(proposals[_winningProposalId]);
+        require(_voteStatus == WorkflowStatus.VotesTallied || // Voting finished
+            (_voteStatus == WorkflowStatus.VotingSessionEnded && proposals.length == 0) || // Stuck, no proposal
+            (_voteStatus == WorkflowStatus.VotingSessionEnded && proposals[_winningProposalId].voteCount == 0), // Stuck, no vote
+            "Resetting voting is not allowed"
+        );
 
         delete _winningProposalId;
 
@@ -341,25 +325,44 @@ contract Voting is Ownable {
 
         _votingSession.increment();
 
-        emit VotingReset(msg.sender);
+        WorkflowStatus previousStatus = _voteStatus;
+
+        _voteStatus = WorkflowStatus.RegisteringVoters;
+
+        emit WorkflowStatusChange(previousStatus, _voteStatus, msg.sender);
+    }
+
+    /*
+    *   @dev Helper function make easier frontend logic
+    */
+    function canAddProposal(address voter) external view returns(bool) {
+        if (_voteStatus != WorkflowStatus.ProposalsRegistrationStarted) {
+            return false;
+        }
+
+        return _voters[voter].isRegistered && _voters[voter].lastVotingSession == _votingSession.current();
     }
 
     /*
     * @dev Helper function to make easier frontend logic
     */
-    function canVote() external view returns(bool) {
-        return _voters[msg.sender].isRegistered && _voters[msg.sender].lastVotingSession == _votingSession.current();
+    function canVote(address voter) external view returns(bool) {
+        if (_voteStatus != WorkflowStatus.VotingSessionStarted) {
+            return false;
+        }
+
+        return _voters[voter].isRegistered &&  _voters[voter].lastVotingSession == _votingSession.current();
     }
 
     /*
     * @dev Helper function to make easier frontend logic
     */
-    function canRegisterItself() external view returns(bool) {
+    function canRegisterItself(address voter) external view returns(bool) {
         if (_voteStatus != WorkflowStatus.CountingEquality) {
             return false;
         }
 
-        return !_voters[msg.sender].isRegistered && _voters[msg.sender].lastVotingSession == _votingSession.current();
+        return ! _voters[voter].isRegistered &&  _voters[voter].lastVotingSession == _votingSession.current();
     }
 
     /*
@@ -367,5 +370,13 @@ contract Voting is Ownable {
     */
     function getStatus() external view returns(WorkflowStatus) {
         return _voteStatus;
+    }
+
+    /*
+    * @notice Returns length of winning proposals history
+    * @dev Used to iterate on history that can be large and trigger a gas dos limit if returned as a whole
+    */
+    function getWinningProposalHistoryCount() external view returns(uint) {
+        return winningProposalHistory.length;
     }
 }

@@ -27,7 +27,7 @@ function UserInfo() {
 
     return (
         <div className="user-info">
-            <p className="user-network network">{getChainLabel(provider.network)}</p>
+            <p className="user-network network primary">{getChainLabel(provider.network)}</p>
             <p className="user-address">{shortenAddress(address!)}</p>
         </div>
 

@@ -8,6 +8,9 @@ dotenv.config();
 const config: HardhatUserConfig = {
   solidity: "0.8.17",
   defaultNetwork: "localhost",
+  paths: {
+    artifacts: "../frontend/src/artifacts/"
+  },
   networks: {
     hardhat: {
   /* Uncomment the line below if metamask fix has to be done in hardhat */

@@ -1,7 +1,6 @@
 import {ethers} from "hardhat";
 import {Voting} from "../typechain-types";
-import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
-import {anyUint} from "@nomicfoundation/hardhat-chai-matchers/withArgs";
+import {loadFixture, mine} from "@nomicfoundation/hardhat-network-helpers";
 import {expect} from "chai";
 
 enum WorkflowStatus {
@@ -482,6 +481,22 @@ describe("Voting smart contract test", () => {
                 ;
             });
 
+            it("Should update correctly winning proposal history after counting", async () => {
+                const {voting, owner, proposalIds} = await loadFixture(deployAndAddProposalsFixture);
+
+                await voting.startVotingSession();
+
+                await voting.vote(proposalIds[1]);
+
+                await voting.endVotingSession();
+
+                await voting.pickWinner();
+
+                const winningProposalLength = await voting.getWinningProposalHistoryCount();
+
+                expect(winningProposalLength).to.equal(1);
+            });
+
             it("Should emit event when equality at votes counting", async () => {
                 const {voting, owner, otherAccounts, proposalIds} = await loadFixture(deployAndAddProposalsFixture);
 
@@ -686,6 +701,8 @@ describe("Voting smart contract test", () => {
 
             it("Should check that winning proposal id picked randomly is correct", async () => {
                 const {voting} = await loadFixture(deployAndVoteToEqualityFixture);
+
+                await mine(25);
 
                 await voting.pickWinnerRandomly();
 

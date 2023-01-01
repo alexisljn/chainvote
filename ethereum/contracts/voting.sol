@@ -289,7 +289,7 @@ contract Voting is Ownable {
 
         assert(_tiedProposals.length > 0);
 
-        uint8 randomIndex = uint8(uint(keccak256(abi.encodePacked(block.timestamp, block.number, block.basefee))) % _tiedProposals.length);
+        uint8 randomIndex = uint8(uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp, block.number, block.basefee))) % _tiedProposals.length);
 
         _winningProposalId = randomIndex;
 
@@ -301,7 +301,6 @@ contract Voting is Ownable {
 
         emit WorkflowStatusChange(WorkflowStatus.CountingEquality, WorkflowStatus.VotesTallied, msg.sender);
     }
-
 
     /*
     * @notice Allows everybody to consult the winning proposal
@@ -371,5 +370,13 @@ contract Voting is Ownable {
     */
     function getStatus() external view returns(WorkflowStatus) {
         return _voteStatus;
+    }
+
+    /*
+    * @notice Returns length of winning proposals history
+    * @dev Used to iterate on history that can be large and trigger a gas dos limit if returned as a whole
+    */
+    function getWinningProposalHistoryCount() external view returns(uint) {
+        return winningProposalHistory.length;
     }
 }

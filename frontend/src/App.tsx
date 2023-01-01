@@ -133,7 +133,7 @@ function App() {
     }, [provider]);
 
     useEffect(() => {
-        if (!votingContract || !address || !chainId) return;
+        if (!votingContract || !chainId) return;
 
         if (!isChainIdSupported(chainId)) return;
 
@@ -168,7 +168,7 @@ function App() {
         )
     }
 
-    if (provider === undefined || isLoading) {
+    if (provider === undefined) {
         return (
             <div className="grid">
                 <div className="header">
@@ -195,6 +195,20 @@ function App() {
                     </div>
                 </div>
             </ChainVoteContext.Provider>
+        )
+    }
+
+    if (isLoading) {
+        return (
+            <div className="grid">
+                <div className="header">
+                    <Header/>
+                </div>
+                <div className="sidebar"></div>
+                <div className="content">
+                    <p>Checking your permissions...</p>
+                </div>
+            </div>
         )
     }
 

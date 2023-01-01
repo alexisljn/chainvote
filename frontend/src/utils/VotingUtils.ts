@@ -1,6 +1,5 @@
 import {BigNumber, Contract, ethers, providers} from "ethers";
 import VOTING_JSON from "../artifacts/contracts/voting.sol/Voting.json";
-import voting from "../components/pages/Voting";
 
 export enum VotingStatus {
     RegisteringVoters,
@@ -28,7 +27,11 @@ function getVotingContractInstance(provider: providers.Web3Provider): Contract {
     return new ethers.Contract(process.env.REACT_APP_CONTRACT_ADDRESS!, VOTING_JSON.abi, provider);
 }
 
-async function getContractPermissions(votingContract: Contract, address: string): Promise<ContractPermissions> {
+async function getContractPermissions(votingContract: Contract, address: string| null): Promise<ContractPermissions> {
+    if (!address) {
+        return {isOwner: false, canAddProposal: false, canVote: false, canRegisterItself: false};
+    }
+
     const isUserOwner = await isOwner(votingContract, address);
     const canUserAddProposal = await canAddProposal(votingContract, address);
     const canUserVote = await canVote(votingContract, address);

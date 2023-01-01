@@ -152,6 +152,22 @@ async function pickWinnerRandomly(provider: providers.Web3Provider, votingContra
     await votingContractWithSigner.pickWinnerRandomly()
 }
 
+async function getWinningProposalsHistory(votingContract: Contract): Promise<Proposal[]> {
+    const winningProposalHistory: Proposal[] = [];
+
+    const winningProposalsHistoryCount = await votingContract.getWinningProposalHistoryCount();
+
+    if (winningProposalsHistoryCount.eq(0)) {
+        return winningProposalHistory;
+    }
+
+    for (let i = 0; i < winningProposalsHistoryCount; i++) {
+        winningProposalHistory.push(await votingContract.winningProposalHistory(i))
+    }
+
+    return generateProposals(winningProposalHistory);
+}
+
 function generateProposals(proposals: any[]): Proposal[] {
     return proposals.map(proposal => ({description: proposal.description, voteCount: proposal.voteCount}));
 }
@@ -177,4 +193,5 @@ export {
     registerItself,
     tallyVotes,
     pickWinnerRandomly,
+    getWinningProposalsHistory
 }

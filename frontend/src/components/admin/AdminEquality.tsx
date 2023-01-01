@@ -1,5 +1,5 @@
 import {useCallback, useContext, useEffect, useState} from "react";
-import {getProposals, prepareNewBallot, Proposal} from "../../utils/VotingUtils";
+import {getProposals, pickWinnerRandomly, prepareNewBallot, Proposal} from "../../utils/VotingUtils";
 import CardGrid from "../common/CardGrid";
 import {ChainVoteContext} from "../../App";
 import {fireToast, getErrorMessage} from "../../utils/Utils";
@@ -36,7 +36,7 @@ function AdminEquality() {
         return () => {
             window.removeEventListener(CONTRACT_EVENT, handleLocallyContractEvents)
         }
-    }, [votingContract, handleLocallyContractEvents])
+    }, [votingContract, handleLocallyContractEvents]);
 
     const onNewBallotClick = useCallback(async () => {
         try {
@@ -44,6 +44,16 @@ function AdminEquality() {
 
             modal.show();
         } catch (e) {
+            fireToast('error', getErrorMessage(e));
+        }
+    }, [provider, votingContract, modal]);
+
+    const onRandomWinnerClick = useCallback(async () => {
+        try {
+            await pickWinnerRandomly(provider!, votingContract!);
+
+            modal.show();
+        } catch (e: any) {
             fireToast('error', getErrorMessage(e));
         }
     }, [provider, votingContract, modal]);
@@ -63,7 +73,7 @@ function AdminEquality() {
                 <div className="admin-status-step">
                     <div className="step-index primary">1<span>b</span></div>
                     <div>
-                        <button className="btn primary">
+                        <button className="btn primary" onClick={onRandomWinnerClick}>
                             Random winner
                         </button>
                     </div>

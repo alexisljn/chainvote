@@ -1,5 +1,6 @@
 import {BigNumber, Contract, ethers, providers} from "ethers";
 import VOTING_JSON from "../artifacts/contracts/voting.sol/Voting.json";
+import voting from "../components/pages/Voting";
 
 export enum VotingStatus {
     RegisteringVoters,
@@ -145,6 +146,12 @@ async function registerItself(provider: providers.Web3Provider, votingContract: 
     await votingContractWithSigner.enableVoteForNewBallot();
 }
 
+async function pickWinnerRandomly(provider: providers.Web3Provider, votingContract: Contract) {
+    const votingContractWithSigner = getVotingContractWithSigner(provider, votingContract);
+
+    await votingContractWithSigner.pickWinnerRandomly()
+}
+
 function generateProposals(proposals: any[]): Proposal[] {
     return proposals.map(proposal => ({description: proposal.description, voteCount: proposal.voteCount}));
 }
@@ -169,4 +176,5 @@ export {
     prepareNewBallot,
     registerItself,
     tallyVotes,
+    pickWinnerRandomly,
 }

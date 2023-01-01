@@ -16,12 +16,10 @@ const config: HardhatUserConfig = {
   /* Uncomment the line below if metamask fix has to be done in hardhat */
   //     chainId: 1337
     },
-    // goerli: {
-    //   url: "",
-    //   accounts: {
-    //     mnemonic: process.env.MNEMONIC
-    //   }
-    // }
+    goerli: {
+      url: `https://goerli.infura.io/v3/${process.env.INFURA_KEY}`,
+      accounts: [String(process.env.PRIVATE_KEY)]
+    }
   }
 };
 

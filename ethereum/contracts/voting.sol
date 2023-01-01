@@ -94,19 +94,6 @@ contract Voting is Ownable {
     }
 
     /**
-    * @notice Allow administrator to start the registration of voters
-    */
-    function registeringVoters() external onlyOwner {
-        require(_voteStatus == WorkflowStatus.VotesTallied, "Current voting is not finished");
-
-        WorkflowStatus previousStatus = _voteStatus;
-
-        _voteStatus = WorkflowStatus.RegisteringVoters;
-
-        emit WorkflowStatusChange(previousStatus, _voteStatus, msg.sender);
-    }
-
-    /**
     * @notice Allow administrator to start the registration of proposals for voters
     */
     function startProposalsRegistration() external onlyOwner {

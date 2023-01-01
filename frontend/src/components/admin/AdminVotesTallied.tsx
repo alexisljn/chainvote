@@ -57,6 +57,7 @@ function AdminVotesTallied() {
 
     return (
         <>
+            <h2>Winning proposal</h2>
             <CardGrid proposals={[winningProposal]}></CardGrid>
             <div className="admin-status-steps">
                 <div className="admin-status-step">

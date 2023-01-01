@@ -52,10 +52,10 @@ function Equality() {
         <>
             <CardGrid proposals={proposals}/>
             <div>
-                <p>Administrator will choose between creating new ballot or picking randomly a winner</p>
+                <p>Administrator will choose between creating new ballot or picking randomly a winner.</p>
             {canRegisterItself &&
                 <div className="register-itself">
-                    <p>If you have already voted you need to register yourself for next ballot</p>
+                    <p><strong>If administrator chooses new ballot</strong> and you already voted for previous one, you need to register yourself for new ballot.</p>
                     <button className="btn primary" onClick={onRegisterItselfClick}>Register</button>
                 </div>
             }

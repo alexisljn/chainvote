@@ -59,6 +59,8 @@ function App() {
         canRegisterItself: false,
     });
 
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+
     const [showModal, setShowModal] = useState<boolean>(false);
 
     const displayModal = useCallback(() => {
@@ -127,8 +129,6 @@ function App() {
             ;
 
             setVotingContract(getVotingContractInstance(provider));
-
-            setPermissions(prevState => ({...prevState, ...{canVote: true}}));
         })()
     }, [provider]);
 
@@ -143,6 +143,7 @@ function App() {
 
         (async () => {
             setPermissions(await getContractPermissions(votingContract, address));
+            setIsLoading(false);
         })();
 
         return () => {
@@ -152,23 +153,8 @@ function App() {
         }
     }, [votingContract, address, chainId, handleLocallyContractEvents]);
 
-    if (provider === undefined) {
-        //TODO Style message
-        return (
-            <div className="grid">
-                <div className="header">
-                    <Header/>
-                </div>
-                <div className="sidebar"></div>
-                <div className="content">
-                    <p>Loading...</p>
-                </div>
-            </div>
-        )
-    }
 
     if (provider === null) {
-        //TODO Style message
         return (
             <div className="grid">
                 <div className="header">
@@ -182,8 +168,21 @@ function App() {
         )
     }
 
+    if (provider === undefined || isLoading) {
+        return (
+            <div className="grid">
+                <div className="header">
+                    <Header/>
+                </div>
+                <div className="sidebar"></div>
+                <div className="content">
+                    <p>Loading...</p>
+                </div>
+            </div>
+        )
+    }
+
     if (!isChainIdSupported(chainId!)) {
-        //TODO Style message
         return (
             <ChainVoteContext.Provider value={{provider, votingContract, address, chainId, changeAddress, permissions, modal: {show: displayModal, hide: hideModal}}}>
                 <div className="grid">

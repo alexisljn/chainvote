@@ -15,8 +15,6 @@ function Admin() {
 
     const [votingStatus, setVotingStatus] = useState<number | null>(null);
 
-    const [isLoading, setIsLoading] = useState<boolean>(true);
-
     const handleLocallyContractEvent = useCallback(async (e: any) => {
         switch (e.detail.type) {
             case 'workflowStatusChange':
@@ -46,10 +44,9 @@ function Admin() {
             return;
         }
 
-        setIsLoading(false);
     }, [permissions]);
 
-    if (isLoading || votingStatus === null) {
+    if (!votingContract || votingStatus === null) {
         return (
             <p>Loading...</p>
         )
@@ -108,9 +105,7 @@ function Admin() {
     }
 
     return (
-        <div>
-            Error
-        </div>
+        <div>Error</div>
     )
 }
 

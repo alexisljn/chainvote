@@ -6,6 +6,7 @@ import {CONTRACT_EVENT} from "../../events-manager/VotingEventsManager";
 import PeriodEnded from "../voting/PeriodEnded";
 import VotingSession from "../voting/VotingSession";
 import Equality from "../voting/Equality";
+import VotesTallied from "../voting/VotesTallied";
 
 function Voting() {
 
@@ -85,6 +86,13 @@ function Voting() {
                 <div>
                     <h1 className="top-grid-area-element">Voting</h1>
                     <Equality/>
+                </div>
+            )
+        case VotingStatus.VotesTallied:
+            return (
+                <div>
+                    <h1 className="top-grid-area-element">Voting</h1>
+                    <VotesTallied/>
                 </div>
             )
     }
